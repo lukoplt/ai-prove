@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "Druhý názor",
+    "tagline": "Druhý názor na odpovědi AI"
+  },
+  "input": {
+    "placeholder": "Vlož sem odpověď AI…",
+    "analyze": "Analyzovat",
+    "clear": "Vymazat",
+    "paste_from_clipboard": "Vložit ze schránky"
+  },
+  "settings": {
+    "title": "Nastavení",
+    "anthropic_key_label": "Anthropic API klíč",
+    "anthropic_key_placeholder": "sk-ant-…",
+    "brave_key_label": "Brave Search API klíč",
+    "brave_key_placeholder": "BSA…",
+    "save_key": "Uložit klíč",
+    "save_settings": "Uložit nastavení",
+    "clear_key": "Smazat klíč",
+    "key_present": "Klíč je uložen v systémové klíčence.",
+    "key_missing": "Klíč zatím není uložen.",
+    "locale_label": "Jazyk rozhraní",
+    "hotkey_label": "Globální klávesová zkratka",
+    "model_label": "Výchozí model",
+    "cache_ttl_label": "Doba platnosti cache (dny)",
+    "back": "Zpět",
+    "saved": "Nastavení uloženo."
+  },
+  "tray": {
+    "show": "Otevřít Druhý názor",
+    "quit": "Ukončit"
+  },
+  "errors": {
+    "key_empty": "Klíč nemůže být prázdný.",
+    "invalid_settings": "Neplatná nastavení.",
+    "unknown": "Neznámá chyba."
+  },
+  "common": {
+    "settings": "Nastavení",
+    "history": "Historie",
+    "ok": "OK",
+    "cancel": "Zrušit"
+  }
+}

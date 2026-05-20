@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "Druhý názor",
+    "tagline": "A second opinion on AI responses"
+  },
+  "input": {
+    "placeholder": "Paste an AI response here…",
+    "analyze": "Analyze",
+    "clear": "Clear",
+    "paste_from_clipboard": "Paste from clipboard"
+  },
+  "settings": {
+    "title": "Settings",
+    "anthropic_key_label": "Anthropic API key",
+    "anthropic_key_placeholder": "sk-ant-…",
+    "brave_key_label": "Brave Search API key",
+    "brave_key_placeholder": "BSA…",
+    "save_key": "Save key",
+    "save_settings": "Save settings",
+    "clear_key": "Clear key",
+    "key_present": "Key is stored in the system keychain.",
+    "key_missing": "Key is not stored yet.",
+    "locale_label": "Interface language",
+    "hotkey_label": "Global hotkey",
+    "model_label": "Default model",
+    "cache_ttl_label": "Cache TTL (days)",
+    "back": "Back",
+    "saved": "Settings saved."
+  },
+  "tray": {
+    "show": "Open Druhý názor",
+    "quit": "Quit"
+  },
+  "errors": {
+    "key_empty": "The key cannot be empty.",
+    "invalid_settings": "Invalid settings.",
+    "unknown": "Unknown error."
+  },
+  "common": {
+    "settings": "Settings",
+    "history": "History",
+    "ok": "OK",
+    "cancel": "Cancel"
+  }
+}
