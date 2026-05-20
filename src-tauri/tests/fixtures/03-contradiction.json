@@ -1,0 +1,10 @@
+{
+  "name": "contradiction",
+  "input": "Albert Einstein se narodil v roce 1879. Einstein zemřel v roce 1955 a žil přesně 65 let.",
+  "expected_min_claims": 3,
+  "must_classify_as_fact": [
+    "Albert Einstein se narodil v roce 1879",
+    "Einstein zemřel v roce 1955"
+  ],
+  "must_classify_as_opinion": []
+}

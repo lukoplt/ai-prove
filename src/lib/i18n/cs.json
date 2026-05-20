@@ -9,6 +9,23 @@
     "clear": "Vymazat",
     "paste_from_clipboard": "Vložit ze schránky"
   },
+  "summary": {
+    "analyzing": "Analyzuji…",
+    "claims_count": "{count} tvrzení",
+    "truncated_warning": "Vstup byl zkrácen na prvních 25 tvrzení.",
+    "error_prefix": "Chyba: {msg}",
+    "missing_key": "Nastav nejdřív Anthropic API klíč v Nastavení."
+  },
+  "sidepanel": {
+    "empty": "Klikni na zvýrazněné tvrzení vlevo.",
+    "kind_fact": "Ověřitelný fakt",
+    "kind_inference": "Odvození",
+    "kind_opinion": "Domněnka",
+    "kind_contradiction": "Vnitřní rozpor",
+    "why_label": "Proč tato barva",
+    "sources_label": "Zdroje",
+    "sources_pending": "Verifikace se připraví v dalším milníku."
+  },
   "settings": {
     "title": "Nastavení",
     "anthropic_key_label": "Anthropic API klíč",

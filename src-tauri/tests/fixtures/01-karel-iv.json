@@ -1,0 +1,11 @@
+{
+  "name": "karel-iv",
+  "input": "Karel IV. se narodil v roce 1316 v Praze a založil pražskou univerzitu, která je nejstarší ve střední Evropě. Jeho otec Jan Lucemburský padl v bitvě u Kresčaku.",
+  "expected_min_claims": 4,
+  "must_classify_as_fact": [
+    "Karel IV. se narodil v roce 1316",
+    "založil pražskou univerzitu",
+    "Jeho otec Jan Lucemburský padl v bitvě u Kresčaku"
+  ],
+  "must_classify_as_opinion": []
+}

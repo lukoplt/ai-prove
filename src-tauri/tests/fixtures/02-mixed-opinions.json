@@ -1,0 +1,7 @@
+{
+  "name": "mixed-opinions",
+  "input": "Nejlepší programovací jazyk na začátek je Python, protože má jednoduchou syntaxi. Python vznikl v roce 1991. Mnoho vývojářů ho doporučuje pro začátečníky.",
+  "expected_min_claims": 3,
+  "must_classify_as_fact": ["Python vznikl v roce 1991"],
+  "must_classify_as_opinion": ["Nejlepší programovací jazyk na začátek je Python"]
+}

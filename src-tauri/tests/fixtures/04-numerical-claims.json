@@ -1,0 +1,7 @@
+{
+  "name": "numerical-claims",
+  "input": "Česká republika má rozlohu 78 866 km² a 10,5 milionu obyvatel. Nejvyšší horou je Sněžka s nadmořskou výškou 1603 m.",
+  "expected_min_claims": 4,
+  "must_classify_as_fact": ["Česká republika má rozlohu 78 866 km²", "Nejvyšší horou je Sněžka"],
+  "must_classify_as_opinion": []
+}

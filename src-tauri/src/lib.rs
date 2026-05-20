@@ -1,10 +1,13 @@
 pub mod commands;
 pub mod error;
 pub mod hotkey;
+pub mod llm;
 pub mod models;
+pub mod pipeline;
 pub mod storage;
 pub mod tray;
 
+use commands::analysis::analyze_text;
 use commands::settings::{clear_api_key, get_settings, has_api_key, set_api_key, set_settings};
 pub use error::{AppError, AppResult};
 use storage::settings_store::{Settings, SETTINGS_FILE, SETTINGS_KEY};
@@ -36,6 +39,7 @@ pub fn run() {
             set_api_key,
             clear_api_key,
             has_api_key,
+            analyze_text,
         ])
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {

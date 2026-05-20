@@ -9,6 +9,23 @@
     "clear": "Clear",
     "paste_from_clipboard": "Paste from clipboard"
   },
+  "summary": {
+    "analyzing": "Analyzing…",
+    "claims_count": "{count} claims",
+    "truncated_warning": "Input was truncated to the first 25 claims.",
+    "error_prefix": "Error: {msg}",
+    "missing_key": "Set the Anthropic API key in Settings first."
+  },
+  "sidepanel": {
+    "empty": "Click a highlighted claim on the left.",
+    "kind_fact": "Verifiable fact",
+    "kind_inference": "Inference",
+    "kind_opinion": "Opinion",
+    "kind_contradiction": "Internal contradiction",
+    "why_label": "Why this color",
+    "sources_label": "Sources",
+    "sources_pending": "Verification arrives in the next milestone."
+  },
   "settings": {
     "title": "Settings",
     "anthropic_key_label": "Anthropic API key",

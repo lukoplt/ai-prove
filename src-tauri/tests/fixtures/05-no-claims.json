@@ -1,0 +1,7 @@
+{
+  "name": "no-claims",
+  "input": "Ahoj! Jak se máš?",
+  "expected_min_claims": 0,
+  "must_classify_as_fact": [],
+  "must_classify_as_opinion": []
+}

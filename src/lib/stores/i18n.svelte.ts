@@ -27,3 +27,11 @@ export function t(key: string): string {
 
   return typeof node === 'string' ? node : key;
 }
+
+export function tf(key: string, vars: Record<string, string | number>): string {
+  let value = t(key);
+  for (const [name, replacement] of Object.entries(vars)) {
+    value = value.replaceAll(`{${name}}`, String(replacement));
+  }
+  return value;
+}
