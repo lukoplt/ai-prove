@@ -14,6 +14,12 @@ pub enum AppError {
     #[error("serde error: {0}")]
     Serde(#[from] serde_json::Error),
 
+    #[error("tauri error: {0}")]
+    Tauri(#[from] tauri::Error),
+
+    #[error("global shortcut error: {0}")]
+    GlobalShortcut(#[from] tauri_plugin_global_shortcut::Error),
+
     #[error("not found: {0}")]
     NotFound(String),
 

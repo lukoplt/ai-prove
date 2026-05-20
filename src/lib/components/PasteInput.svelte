@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { readText } from '@tauri-apps/plugin-clipboard-manager';
+  import { readClipboardText } from '$lib/api';
   import { t } from '$lib/stores/i18n.svelte';
 
   let {
@@ -10,7 +10,7 @@
   let dragging = $state(false);
 
   async function paste() {
-    const text = await readText();
+    const text = await readClipboardText();
     if (text) value = text;
   }
 

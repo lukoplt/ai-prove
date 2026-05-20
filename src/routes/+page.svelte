@@ -1,9 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { listen } from '@tauri-apps/api/event';
-  import { readText } from '@tauri-apps/plugin-clipboard-manager';
   import { onMount } from 'svelte';
+  import { isTauriRuntime, readClipboardText } from '$lib/api';
   import PasteInput from '$lib/components/PasteInput.svelte';
   import { t } from '$lib/stores/i18n.svelte';
 
@@ -15,10 +14,14 @@
   }
 
   onMount(() => {
-    const unlisten = listen('capture-trigger', async () => {
-      const clipboard = await readText();
-      if (clipboard) inputText = clipboard;
-    });
+    if (!isTauriRuntime()) return;
+
+    const unlisten = import('@tauri-apps/api/event').then(({ listen }) =>
+      listen('capture-trigger', async () => {
+        const clipboard = await readClipboardText();
+        if (clipboard) inputText = clipboard;
+      }),
+    );
 
     return () => {
       unlisten.then((unsubscribe) => unsubscribe());
@@ -33,9 +36,9 @@
       <p>{t('app.tagline')}</p>
     </div>
     <nav>
-      <button type="button" onclick={() => goto(resolve('/settings'))}
-        >{t('common.settings')}</button
-      >
+      <button type="button" onclick={() => goto(resolve('/settings'))}>
+        {t('common.settings')}
+      </button>
     </nav>
   </header>
 

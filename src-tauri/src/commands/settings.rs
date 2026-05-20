@@ -13,7 +13,9 @@ pub async fn get_settings<R: Runtime>(app: AppHandle<R>) -> AppResult<Settings> 
 
     let value = store.get(SETTINGS_KEY);
     let settings: Settings = match value {
-        Some(value) => serde_json::from_value(value).unwrap_or_else(|_| Settings::with_system_locale()),
+        Some(value) => {
+            serde_json::from_value(value).unwrap_or_else(|_| Settings::with_system_locale())
+        }
         None => Settings::with_system_locale(),
     };
 

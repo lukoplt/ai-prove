@@ -26,6 +26,7 @@ impl Default for Settings {
 }
 
 impl Settings {
+    #[must_use]
     pub fn map_locale(raw: &str) -> String {
         let two = raw
             .split(['-', '_'])
@@ -34,16 +35,15 @@ impl Settings {
             .to_ascii_lowercase();
         match two.as_str() {
             "cs" => "cs".into(),
-            "en" => "en".into(),
             _ => "en".into(),
         }
     }
 
+    #[must_use]
     pub fn with_system_locale() -> Self {
         let detected = sys_locale::get_locale()
             .as_deref()
-            .map(Self::map_locale)
-            .unwrap_or_else(|| "en".into());
+            .map_or_else(|| "en".into(), Self::map_locale);
         Self {
             locale: detected,
             ..Self::default()
