@@ -22,6 +22,7 @@
     "store:allow-load",
     "clipboard-manager:default",
     "clipboard-manager:allow-read-text",
-    "clipboard-manager:allow-write-text"
+    "clipboard-manager:allow-write-text",
+    "shell:allow-open"
   ]
 }

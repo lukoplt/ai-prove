@@ -16,12 +16,16 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+futures = "0.3"
 hex = "0.4"
+readability = "0.3"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream", "gzip"] }
+rusqlite = { version = "0.31", features = ["bundled"] }
 sha2 = "0.10"
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-global-shortcut = "2"
+tauri-plugin-shell = "2"
 tauri-plugin-single-instance = "2"
 tauri-plugin-store = "2"
 serde = { version = "1", features = ["derive"] }
@@ -34,6 +38,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 keyring = { version = "3", features = ["apple-native", "windows-native"] }
 uuid = { version = "1", features = ["v7"] }
 sys-locale = "0.3"
+url = "2"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util"] }

@@ -4,12 +4,14 @@ pub mod hotkey;
 pub mod llm;
 pub mod models;
 pub mod pipeline;
+pub mod search;
 pub mod storage;
 pub mod tray;
 
 use commands::analysis::analyze_text;
 use commands::settings::{clear_api_key, get_settings, has_api_key, set_api_key, set_settings};
 pub use error::{AppError, AppResult};
+use storage::db::Db;
 use storage::settings_store::{Settings, SETTINGS_FILE, SETTINGS_KEY};
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_store::StoreExt;
@@ -33,6 +35,7 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             get_settings,
             set_settings,
@@ -56,6 +59,8 @@ pub fn run() {
                 .and_then(|value| serde_json::from_value(value).ok())
                 .unwrap_or_default();
 
+            let data_dir = app.path().app_data_dir()?;
+            app.manage(Db::open(data_dir.join("cache.db"))?);
             hotkey::install(&app.handle().clone(), &settings.hotkey)?;
             tray::install(&app.handle().clone())?;
             Ok(())

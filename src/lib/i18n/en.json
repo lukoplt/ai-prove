@@ -14,7 +14,8 @@
     "claims_count": "{count} claims",
     "truncated_warning": "Input was truncated to the first 25 claims.",
     "error_prefix": "Error: {msg}",
-    "missing_key": "Set the Anthropic API key in Settings first."
+    "missing_key": "Set the Anthropic API key in Settings first.",
+    "missing_keys": "Set the Anthropic and Brave Search API keys in Settings first."
   },
   "sidepanel": {
     "empty": "Click a highlighted claim on the left.",
@@ -25,6 +26,32 @@
     "why_label": "Why this color",
     "sources_label": "Sources",
     "sources_pending": "Verification arrives in the next milestone."
+  },
+  "tier": {
+    "a": "Primary source",
+    "b": "Major outlet",
+    "c": "Other",
+    "d": "Social / blog"
+  },
+  "stance": {
+    "supports": "Supports",
+    "contradicts": "Contradicts",
+    "mentions": "Mentions"
+  },
+  "source": {
+    "open": "Open in browser"
+  },
+  "status": {
+    "supported": "Verified",
+    "contradicted": "Contradicted",
+    "no_consensus": "No consensus",
+    "not_found": "Not found",
+    "not_verified": "Not verified"
+  },
+  "verification": {
+    "pending": "Verifying…",
+    "skipped_kind": "We don't verify this kind of claim.",
+    "no_sources": "No sources."
   },
   "settings": {
     "title": "Settings",

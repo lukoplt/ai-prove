@@ -14,7 +14,8 @@
     "claims_count": "{count} tvrzení",
     "truncated_warning": "Vstup byl zkrácen na prvních 25 tvrzení.",
     "error_prefix": "Chyba: {msg}",
-    "missing_key": "Nastav nejdřív Anthropic API klíč v Nastavení."
+    "missing_key": "Nastav nejdřív Anthropic API klíč v Nastavení.",
+    "missing_keys": "Nastav nejdřív Anthropic a Brave Search API klíč v Nastavení."
   },
   "sidepanel": {
     "empty": "Klikni na zvýrazněné tvrzení vlevo.",
@@ -25,6 +26,32 @@
     "why_label": "Proč tato barva",
     "sources_label": "Zdroje",
     "sources_pending": "Verifikace se připraví v dalším milníku."
+  },
+  "tier": {
+    "a": "Primární zdroj",
+    "b": "Velké médium",
+    "c": "Ostatní",
+    "d": "Sociální / blog"
+  },
+  "stance": {
+    "supports": "Podporuje",
+    "contradicts": "Vyvrací",
+    "mentions": "Zmiňuje"
+  },
+  "source": {
+    "open": "Otevřít v prohlížeči"
+  },
+  "status": {
+    "supported": "Ověřeno",
+    "contradicted": "Vyvráceno",
+    "no_consensus": "Bez konsenzu",
+    "not_found": "Bez nálezu",
+    "not_verified": "Nebylo ověřováno"
+  },
+  "verification": {
+    "pending": "Ověřuji…",
+    "skipped_kind": "Tento typ tvrzení neověřujeme.",
+    "no_sources": "Žádné zdroje."
   },
   "settings": {
     "title": "Nastavení",

@@ -1,4 +1,4 @@
-import { analyzeText, onAnalysisClaims, onAnalysisStarted } from '$lib/api';
+import { analyzeText, onAnalysisClaims, onAnalysisStarted, onClaimVerified } from '$lib/api';
 import type { Analysis, Claim } from '$lib/types';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
@@ -27,6 +27,17 @@ async function ensureSubscriptions() {
       current = analysis;
       status = 'done';
       selectedId = analysis.claims[0]?.id ?? null;
+    }),
+  );
+  unlistens.push(
+    await onClaimVerified(({ analysisId, claimId, verification }) => {
+      if (!current || current.id !== analysisId) return;
+      current = {
+        ...current,
+        claims: current.claims.map((claim) =>
+          claim.id === claimId ? { ...claim, verification } : claim,
+        ),
+      };
     }),
   );
 }

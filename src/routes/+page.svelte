@@ -13,8 +13,8 @@
   let inputText = $state('');
 
   async function handleAnalyze(text: string) {
-    if (isTauriRuntime() && !settings.anthropicPresent) {
-      alert(t('summary.missing_key'));
+    if (isTauriRuntime() && (!settings.anthropicPresent || !settings.bravePresent)) {
+      alert(t('summary.missing_keys'));
       await goto(resolve('/settings'));
       return;
     }

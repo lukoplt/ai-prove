@@ -1,11 +1,16 @@
 <script lang="ts">
   import { t } from '$lib/stores/i18n.svelte';
-  import type { Claim } from '$lib/types';
+  import type { Claim, VerificationStatus } from '$lib/types';
+  import SourceCard from './SourceCard.svelte';
 
   let { claim }: { claim: Claim | null } = $props();
 
   function kindLabel(kind: Claim['kind']): string {
     return t(`sidepanel.kind_${kind}`);
+  }
+
+  function statusLabel(status: VerificationStatus): string {
+    return t(`status.${status}`);
   }
 </script>
 
@@ -23,7 +28,23 @@
     </section>
     <section>
       <h3>{t('sidepanel.sources_label')}</h3>
-      <p class="pending">{t('sidepanel.sources_pending')}</p>
+      {#if claim.kind !== 'fact'}
+        <p class="muted">{t('verification.skipped_kind')}</p>
+      {:else if !claim.verification}
+        <p class="muted">{t('verification.pending')}</p>
+      {:else}
+        <p class="verdict status-{claim.verification.status}">
+          <strong>{statusLabel(claim.verification.status)}</strong>
+          - {claim.verification.summary}
+        </p>
+        {#if claim.verification.sources.length === 0}
+          <p class="muted">{t('verification.no_sources')}</p>
+        {:else}
+          {#each claim.verification.sources as source (source.url)}
+            <SourceCard {source} />
+          {/each}
+        {/if}
+      {/if}
     </section>
   {/if}
 </aside>
@@ -96,8 +117,37 @@
     font-size: 14px;
   }
 
-  .pending {
+  .muted {
     color: #a1a1aa;
     font-style: italic;
+  }
+
+  .verdict {
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .status-supported {
+    background: rgba(34, 197, 94, 0.15);
+    color: #14532d;
+  }
+
+  .status-contradicted {
+    background: rgba(239, 68, 68, 0.15);
+    color: #7f1d1d;
+  }
+
+  .status-no_consensus {
+    background: rgba(234, 179, 8, 0.18);
+    color: #713f12;
+  }
+
+  .status-not_found,
+  .status-not_verified {
+    background: #f3f4f6;
+    color: #4b5563;
   }
 </style>

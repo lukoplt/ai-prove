@@ -1,15 +1,25 @@
 use crate::error::{AppError, AppResult};
 use crate::llm::anthropic::AnthropicProvider;
-use crate::models::Analysis;
+use crate::llm::LlmProvider;
+use crate::models::{Analysis, Claim, ClaimKind, Verification, VerificationStatus};
 use crate::pipeline::atomize_to_claims;
+use crate::pipeline::verify::VerificationEngine;
+use crate::search::brave::BraveClient;
+use crate::search::extract::Extractor;
+use crate::search::SearchProvider;
+use crate::storage::cache;
+use crate::storage::db::Db;
 use crate::storage::keychain;
 use crate::storage::settings_store::{Settings, SETTINGS_FILE, SETTINGS_KEY};
 use chrono::Utc;
-use tauri::{AppHandle, Emitter, Runtime};
+use std::sync::Arc;
+use tauri::{AppHandle, Emitter, Runtime, State};
 use tauri_plugin_store::StoreExt;
 use uuid::Uuid;
 
 pub const ACCOUNT_ANTHROPIC: &str = "anthropic";
+pub const ACCOUNT_BRAVE: &str = "brave";
+pub const MAX_VERIFIED_CLAIMS: usize = 8;
 
 #[derive(Debug, serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -24,17 +34,35 @@ pub struct AnalysisClaimsEvent {
     pub analysis: Analysis,
 }
 
+#[derive(Debug, serde::Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaimVerifiedEvent {
+    pub analysis_id: String,
+    pub claim_id: String,
+    pub verification: Verification,
+}
+
 #[tauri::command]
-pub async fn analyze_text<R: Runtime>(app: AppHandle<R>, text: String) -> AppResult<String> {
+pub async fn analyze_text<R: Runtime>(
+    app: AppHandle<R>,
+    db: State<'_, Db>,
+    text: String,
+) -> AppResult<String> {
     let trimmed = text.trim();
     if trimmed.is_empty() {
         return Err(AppError::Invalid("input is empty".into()));
     }
 
-    let api_key = keychain::get_api_key(ACCOUNT_ANTHROPIC)?
+    let anthropic_key = keychain::get_api_key(ACCOUNT_ANTHROPIC)?
         .ok_or_else(|| AppError::NotFound("anthropic key".into()))?;
+    let brave_key = keychain::get_api_key(ACCOUNT_BRAVE)?
+        .ok_or_else(|| AppError::NotFound("brave key".into()))?;
     let settings = load_settings(&app);
-    let provider = AnthropicProvider::new(api_key, settings.model, settings.locale)?;
+    let provider: Arc<dyn LlmProvider> = Arc::new(AnthropicProvider::new(
+        anthropic_key,
+        settings.model.clone(),
+        settings.locale.clone(),
+    )?);
 
     let analysis_id = Uuid::now_v7().to_string();
     app.emit(
@@ -45,12 +73,12 @@ pub async fn analyze_text<R: Runtime>(app: AppHandle<R>, text: String) -> AppRes
     )
     .map_err(|error| AppError::Other(format!("emit: {error}")))?;
 
-    let outcome = atomize_to_claims(&provider, trimmed).await?;
+    let outcome = atomize_to_claims(provider.as_ref(), trimmed).await?;
     let analysis = Analysis {
         id: analysis_id.clone(),
         created_at: Utc::now().timestamp_millis(),
         input: trimmed.to_string(),
-        claims: outcome.claims,
+        claims: outcome.claims.clone(),
         truncated: outcome.truncated,
     };
 
@@ -58,10 +86,23 @@ pub async fn analyze_text<R: Runtime>(app: AppHandle<R>, text: String) -> AppRes
         "analysis-claims",
         AnalysisClaimsEvent {
             analysis_id: analysis_id.clone(),
-            analysis,
+            analysis: analysis.clone(),
         },
     )
     .map_err(|error| AppError::Other(format!("emit: {error}")))?;
+
+    spawn_verifications(
+        &app,
+        db.inner().clone(),
+        provider,
+        brave_key,
+        analysis_id.clone(),
+        trimmed.to_string(),
+        analysis.created_at,
+        outcome.claims,
+        analysis.truncated,
+        settings.cache_ttl_days,
+    );
 
     Ok(analysis_id)
 }
@@ -77,4 +118,180 @@ fn load_settings<R: Runtime>(app: &AppHandle<R>) -> Settings {
     };
 
     settings
+}
+
+#[allow(clippy::too_many_arguments)]
+fn spawn_verifications<R: Runtime>(
+    app: &AppHandle<R>,
+    db: Db,
+    provider: Arc<dyn LlmProvider>,
+    brave_key: String,
+    analysis_id: String,
+    input: String,
+    created_at_ms: i64,
+    claims: Vec<Claim>,
+    truncated: bool,
+    cache_ttl_days: u32,
+) {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use tokio::sync::{Mutex, Notify};
+    use tokio::time::{timeout, Duration};
+
+    let baseline = Analysis {
+        id: analysis_id.clone(),
+        created_at: created_at_ms,
+        input: input.clone(),
+        claims: claims.clone(),
+        truncated,
+    };
+    let _ = crate::storage::history::insert(&db, &baseline);
+
+    let (fact_claims, skipped_fact_claims) = split_fact_claims(&claims);
+
+    if fact_claims.is_empty() {
+        return;
+    }
+
+    let mut final_claims_vec = claims;
+    mark_skipped_fact_claims(
+        app,
+        &analysis_id,
+        &mut final_claims_vec,
+        skipped_fact_claims,
+    );
+
+    let extractor = match Extractor::new() {
+        Ok(extractor) => Arc::new(extractor),
+        Err(_) => return,
+    };
+    let search: Arc<dyn SearchProvider> = match BraveClient::new(brave_key) {
+        Ok(client) => Arc::new(client),
+        Err(_) => return,
+    };
+    let engine = Arc::new(VerificationEngine {
+        llm: provider,
+        search,
+        extractor,
+    });
+
+    let app = app.clone();
+    let ttl_ms = i64::from(cache_ttl_days) * 24 * 3_600 * 1000;
+    let total = fact_claims.len();
+    let done = Arc::new(AtomicUsize::new(0));
+    let notify = Arc::new(Notify::new());
+    let final_claims = Arc::new(Mutex::new(final_claims_vec));
+
+    for claim in fact_claims {
+        let app = app.clone();
+        let db = db.clone();
+        let engine = engine.clone();
+        let analysis_id = analysis_id.clone();
+        let done = done.clone();
+        let notify = notify.clone();
+        let final_claims = final_claims.clone();
+
+        tokio::spawn(async move {
+            let now = Utc::now().timestamp_millis();
+            let hash = cache::hash_claim(&claim.text);
+            let verification = match cache::get(&db, &hash, ttl_ms, now) {
+                Ok(Some(cached)) => cached,
+                _ => match engine.verify(&claim.text).await {
+                    Ok(verification) => {
+                        let _ = cache::put(&db, &hash, &claim.text, &verification, now);
+                        verification
+                    }
+                    Err(error) => Verification {
+                        status: VerificationStatus::NotFound,
+                        sources: Vec::new(),
+                        summary: format!("Verifikace selhala: {error}"),
+                    },
+                },
+            };
+
+            {
+                let mut claims = final_claims.lock().await;
+                if let Some(target) = claims.iter_mut().find(|item| item.id == claim.id) {
+                    target.verification = Some(verification.clone());
+                }
+            }
+
+            let _ = app.emit(
+                "claim-verified",
+                ClaimVerifiedEvent {
+                    analysis_id,
+                    claim_id: claim.id,
+                    verification,
+                },
+            );
+
+            let previous = done.fetch_add(1, Ordering::SeqCst);
+            if previous + 1 >= total {
+                notify.notify_one();
+            }
+        });
+    }
+
+    tokio::spawn(async move {
+        let _ = timeout(Duration::from_secs(30), notify.notified()).await;
+        let claims_snapshot = final_claims.lock().await.clone();
+        let analysis = Analysis {
+            id: analysis_id,
+            created_at: created_at_ms,
+            input,
+            claims: claims_snapshot,
+            truncated,
+        };
+        let _ = crate::storage::history::insert(&db, &analysis);
+    });
+}
+
+fn split_fact_claims(claims: &[Claim]) -> (Vec<Claim>, Vec<Claim>) {
+    let all_fact_claims: Vec<Claim> = claims
+        .iter()
+        .filter(|claim| claim.kind == ClaimKind::Fact)
+        .cloned()
+        .collect();
+    let verified = all_fact_claims
+        .iter()
+        .take(MAX_VERIFIED_CLAIMS)
+        .cloned()
+        .collect();
+    let skipped = all_fact_claims
+        .into_iter()
+        .skip(MAX_VERIFIED_CLAIMS)
+        .collect();
+
+    (verified, skipped)
+}
+
+fn mark_skipped_fact_claims<R: Runtime>(
+    app: &AppHandle<R>,
+    analysis_id: &str,
+    claims: &mut [Claim],
+    skipped_fact_claims: Vec<Claim>,
+) {
+    for claim in skipped_fact_claims {
+        let verification = skipped_fact_verification();
+        if let Some(target) = claims.iter_mut().find(|candidate| candidate.id == claim.id) {
+            target.verification = Some(verification.clone());
+        }
+
+        let _ = app.emit(
+            "claim-verified",
+            ClaimVerifiedEvent {
+                analysis_id: analysis_id.to_string(),
+                claim_id: claim.id,
+                verification,
+            },
+        );
+    }
+}
+
+#[must_use]
+fn skipped_fact_verification() -> Verification {
+    Verification {
+        status: VerificationStatus::NotVerified,
+        sources: Vec::new(),
+        summary: format!("Ověřuje se jen prvních {MAX_VERIFIED_CLAIMS} faktických tvrzení."),
+    }
 }
