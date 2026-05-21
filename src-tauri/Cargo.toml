@@ -39,7 +39,6 @@ uuid = { version = "1", features = ["v7"] }
 sys-locale = "0.3"
 url = "2"
 shlex = "1"
-which = "6"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util"] }
