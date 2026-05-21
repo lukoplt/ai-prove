@@ -74,8 +74,7 @@ pub async fn analyze_text<R: Runtime>(
     }
 
     let settings = load_settings(&app);
-    let brave_key = keychain::get_api_key(ACCOUNT_BRAVE)?
-        .ok_or_else(|| AppError::NotFound("brave key".into()))?;
+    let brave_key = keychain::get_api_key(ACCOUNT_BRAVE)?.filter(|key| !key.trim().is_empty());
     let provider = build_llm_provider(&settings)?;
 
     let analysis_id = Uuid::now_v7().to_string();
@@ -140,7 +139,7 @@ fn spawn_verifications<R: Runtime>(
     app: &AppHandle<R>,
     db: Db,
     provider: Arc<dyn LlmProvider>,
-    brave_key: String,
+    brave_key: Option<String>,
     analysis_id: String,
     input: String,
     created_at_ms: i64,
@@ -162,13 +161,34 @@ fn spawn_verifications<R: Runtime>(
     };
     let _ = crate::storage::history::insert(&db, &baseline);
 
+    let all_fact_claims = collect_fact_claims(&claims);
     let (fact_claims, skipped_fact_claims) = split_fact_claims(&claims);
 
-    if fact_claims.is_empty() {
+    if all_fact_claims.is_empty() {
         return;
     }
 
     let mut final_claims_vec = claims;
+
+    let Some(brave_key) = brave_key else {
+        mark_web_search_disabled_fact_claims(
+            app,
+            &analysis_id,
+            &mut final_claims_vec,
+            all_fact_claims,
+            locale,
+        );
+        let analysis = Analysis {
+            id: analysis_id,
+            created_at: created_at_ms,
+            input,
+            claims: final_claims_vec,
+            truncated,
+        };
+        let _ = crate::storage::history::insert(&db, &analysis);
+        return;
+    };
+
     mark_skipped_fact_claims(
         app,
         &analysis_id,
@@ -264,12 +284,16 @@ fn spawn_verifications<R: Runtime>(
     });
 }
 
-fn split_fact_claims(claims: &[Claim]) -> (Vec<Claim>, Vec<Claim>) {
-    let all_fact_claims: Vec<Claim> = claims
+fn collect_fact_claims(claims: &[Claim]) -> Vec<Claim> {
+    claims
         .iter()
         .filter(|claim| claim.kind == ClaimKind::Fact)
         .cloned()
-        .collect();
+        .collect()
+}
+
+fn split_fact_claims(claims: &[Claim]) -> (Vec<Claim>, Vec<Claim>) {
+    let all_fact_claims = collect_fact_claims(claims);
     let verified = all_fact_claims
         .iter()
         .take(MAX_VERIFIED_CLAIMS)
@@ -307,6 +331,30 @@ fn mark_skipped_fact_claims<R: Runtime>(
     }
 }
 
+fn mark_web_search_disabled_fact_claims<R: Runtime>(
+    app: &AppHandle<R>,
+    analysis_id: &str,
+    claims: &mut [Claim],
+    fact_claims: Vec<Claim>,
+    locale: &str,
+) {
+    for claim in fact_claims {
+        let verification = web_search_disabled_verification(locale);
+        if let Some(target) = claims.iter_mut().find(|candidate| candidate.id == claim.id) {
+            target.verification = Some(verification.clone());
+        }
+
+        let _ = app.emit(
+            "claim-verified",
+            ClaimVerifiedEvent {
+                analysis_id: analysis_id.to_string(),
+                claim_id: claim.id,
+                verification,
+            },
+        );
+    }
+}
+
 #[must_use]
 fn skipped_fact_verification(locale: &str) -> Verification {
     let summary = match locale {
@@ -320,9 +368,41 @@ fn skipped_fact_verification(locale: &str) -> Verification {
     }
 }
 
+#[must_use]
+fn web_search_disabled_verification(locale: &str) -> Verification {
+    let summary = match locale {
+        "cs" => "Webové ověřování není zapnuté. Tvrzení bylo zpracováno bez hledání zdrojů.".into(),
+        _ => {
+            "Web verification is not enabled. The claim was processed without source search.".into()
+        }
+    };
+    Verification {
+        status: VerificationStatus::NotVerified,
+        sources: Vec::new(),
+        summary,
+    }
+}
+
 fn verification_failure_message(locale: &str, error: &str) -> String {
     match locale {
         "cs" => format!("Verifikace selhala: {error}"),
         _ => format!("Verification failed: {error}"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn web_search_disabled_verification_is_not_verified_without_sources() {
+        let verification = web_search_disabled_verification("cs");
+
+        assert_eq!(verification.status, VerificationStatus::NotVerified);
+        assert!(verification.sources.is_empty());
+        assert_eq!(
+            verification.summary,
+            "Webové ověřování není zapnuté. Tvrzení bylo zpracováno bez hledání zdrojů."
+        );
     }
 }

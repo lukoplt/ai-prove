@@ -6,6 +6,7 @@
   import ClaimText from '$lib/components/ClaimText.svelte';
   import PasteInput from '$lib/components/PasteInput.svelte';
   import SidePanel from '$lib/components/SidePanel.svelte';
+  import { analysisPreflightError } from '$lib/preflight';
   import { analysisStore } from '$lib/stores/analysis.svelte';
   import { t, tf } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
@@ -13,22 +14,16 @@
   let inputText = $state('');
 
   function preflightError(): string | null {
-    if (!isTauriRuntime()) return null;
-    if (!settings.bravePresent) return t('summary.missing_brave_key');
-
-    const current = settings.current;
-    if (current.provider === 'anthropic') {
-      if (!settings.anthropicPresent) return t('summary.missing_anthropic_key');
-      if (!current.anthropic_model?.trim()) return t('summary.missing_anthropic_model');
-      return null;
-    }
-
-    if (current.provider === 'cli') {
-      if (!current.cli_command?.trim()) return t('summary.missing_cli_command');
-      return null;
-    }
-
-    return null;
+    return analysisPreflightError({
+      isNative: isTauriRuntime(),
+      anthropicPresent: settings.anthropicPresent,
+      settings: settings.current,
+      messages: {
+        missingAnthropicKey: t('summary.missing_anthropic_key'),
+        missingAnthropicModel: t('summary.missing_anthropic_model'),
+        missingCliCommand: t('summary.missing_cli_command'),
+      },
+    });
   }
 
   async function handleAnalyze(text: string) {

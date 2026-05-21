@@ -84,7 +84,7 @@
   <section>
     <h2>{t('settings.brave_key_label')}</h2>
     <p class="status">
-      {settings.bravePresent ? t('settings.key_present') : t('settings.key_missing')}
+      {settings.bravePresent ? t('settings.key_present') : t('settings.brave_key_missing_optional')}
     </p>
     <div class="row">
       <input
@@ -104,6 +104,7 @@
         {t('settings.clear_key')}
       </button>
     </div>
+    <small class="hint">{t('settings.brave_key_hint')}</small>
   </section>
 
   <section class="settings-grid">
