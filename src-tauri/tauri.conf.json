@@ -39,6 +39,9 @@
     ],
     "category": "Productivity",
     "shortDescription": "Verification layer for AI responses",
-    "longDescription": "Druhý názor analyzes AI responses, classifies each claim by epistemic type, and verifies factual claims against the open web."
+    "longDescription": "Druhý názor analyzes AI responses, classifies each claim by epistemic type, and verifies factual claims against the open web.",
+    "macOS": {
+      "signingIdentity": "-"
+    }
   }
 }
