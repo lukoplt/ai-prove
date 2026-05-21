@@ -16,6 +16,7 @@ pub struct VerificationEngine {
     pub llm: Arc<dyn LlmProvider>,
     pub search: Arc<dyn SearchProvider>,
     pub extractor: Arc<Extractor>,
+    pub locale: String,
 }
 
 impl VerificationEngine {
@@ -28,7 +29,7 @@ impl VerificationEngine {
             return Ok(Verification {
                 status: VerificationStatus::NotFound,
                 sources: Vec::new(),
-                summary: "Nenašel jsem žádný zdroj k ověření.".into(),
+                summary: summarize(&self.locale, VerificationStatus::NotFound, &[]),
             });
         }
 
@@ -50,7 +51,7 @@ impl VerificationEngine {
         });
 
         let status = aggregate(&hits);
-        let summary = summarize(status, &hits);
+        let summary = summarize(&self.locale, status, &hits);
         let sources = hits.into_iter().take(MAX_SOURCES_IN_RESULT).collect();
 
         Ok(Verification {
@@ -190,16 +191,23 @@ fn aggregate(hits: &[SourceHit]) -> VerificationStatus {
     VerificationStatus::NotFound
 }
 
-fn summarize(status: VerificationStatus, hits: &[SourceHit]) -> String {
+pub(crate) fn summarize(locale: &str, status: VerificationStatus, hits: &[SourceHit]) -> String {
     let count = hits.len();
-    match status {
-        VerificationStatus::Supported => format!("Tvrzení potvrzuje {count} zdrojů."),
-        VerificationStatus::Contradicted => format!("Tvrzení vyvrací {count} zdrojů."),
-        VerificationStatus::NoConsensus => "Zdroje se neshodují - bez konsenzu.".into(),
-        VerificationStatus::NotFound => {
+    match (locale, status) {
+        ("cs", VerificationStatus::Supported) => format!("Tvrzení potvrzuje {count} zdrojů."),
+        ("cs", VerificationStatus::Contradicted) => format!("Tvrzení vyvrací {count} zdrojů."),
+        ("cs", VerificationStatus::NoConsensus) => "Zdroje se neshodují – bez konsenzu.".into(),
+        ("cs", VerificationStatus::NotFound) => {
             "Nenašel jsem zdroje, které by se k tvrzení vyjadřovaly.".into()
         }
-        VerificationStatus::NotVerified => "Tvrzení nebylo ověřováno.".into(),
+        ("cs", VerificationStatus::NotVerified) => "Tvrzení nebylo ověřováno.".into(),
+        (_, VerificationStatus::Supported) => format!("{count} source(s) support this claim."),
+        (_, VerificationStatus::Contradicted) => {
+            format!("{count} source(s) contradict this claim.")
+        }
+        (_, VerificationStatus::NoConsensus) => "Sources disagree — no consensus.".into(),
+        (_, VerificationStatus::NotFound) => "No sources found addressing this claim.".into(),
+        (_, VerificationStatus::NotVerified) => "Claim was not verified.".into(),
     }
 }
 

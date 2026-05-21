@@ -10,17 +10,29 @@ const ENDPOINT: &str = "https://api.search.brave.com/res/v1/web/search";
 pub struct BraveClient {
     client: Client,
     api_key: String,
+    locale: String,
 }
 
 impl BraveClient {
-    pub fn new(api_key: String) -> AppResult<Self> {
+    pub fn new(api_key: String, locale: String) -> AppResult<Self> {
         let client = Client::builder()
             .timeout(Duration::from_secs(20))
             .user_agent("druhy-nazor/0.1")
             .build()
             .map_err(|error| AppError::Other(format!("reqwest builder: {error}")))?;
 
-        Ok(Self { client, api_key })
+        Ok(Self {
+            client,
+            api_key,
+            locale,
+        })
+    }
+
+    fn country_and_lang(&self) -> (&'static str, &'static str) {
+        match self.locale.as_str() {
+            "cs" => ("cz", "cs"),
+            _ => ("us", "en"),
+        }
     }
 }
 
@@ -28,14 +40,15 @@ impl BraveClient {
 impl SearchProvider for BraveClient {
     async fn search(&self, query: &str, limit: usize) -> AppResult<Vec<SearchResult>> {
         let count = limit.clamp(1, 20);
+        let (country, search_lang) = self.country_and_lang();
         let response = self
             .client
             .get(ENDPOINT)
             .query(&[
                 ("q", query),
                 ("count", &count.to_string()),
-                ("country", "cz"),
-                ("search_lang", "cs"),
+                ("country", country),
+                ("search_lang", search_lang),
                 ("safesearch", "moderate"),
                 ("spellcheck", "0"),
             ])

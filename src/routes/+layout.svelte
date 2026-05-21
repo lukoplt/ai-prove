@@ -6,7 +6,11 @@
 
   let { children } = $props();
 
+  let bootLabel = $state('Loading… / Spouštím…');
+
   onMount(async () => {
+    const nav = typeof navigator !== 'undefined' ? navigator.language : '';
+    bootLabel = nav?.toLowerCase().startsWith('cs') ? 'Spouštím…' : 'Loading…';
     await settings.load();
     setLocale(settings.current.locale);
   });
@@ -15,7 +19,7 @@
 {#if settings.loaded}
   {@render children()}
 {:else}
-  <div class="boot">Spouštím…</div>
+  <div class="boot">{bootLabel}</div>
 {/if}
 
 <style>

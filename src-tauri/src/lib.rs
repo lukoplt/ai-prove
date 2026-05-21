@@ -57,12 +57,12 @@ pub fn run() {
             let settings: Settings = store
                 .get(SETTINGS_KEY)
                 .and_then(|value| serde_json::from_value(value).ok())
-                .unwrap_or_default();
+                .unwrap_or_else(Settings::with_system_locale);
 
             let data_dir = app.path().app_data_dir()?;
             app.manage(Db::open(data_dir.join("cache.db"))?);
             hotkey::install(&app.handle().clone(), &settings.hotkey)?;
-            tray::install(&app.handle().clone())?;
+            tray::install(&app.handle().clone(), &settings.locale)?;
             Ok(())
         })
         .run(tauri::generate_context!())

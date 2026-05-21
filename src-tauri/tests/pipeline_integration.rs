@@ -44,6 +44,7 @@ async fn atomize_then_verify_supported_with_live_fetch_when_enabled() {
             }],
         }),
         extractor: Arc::new(Extractor::new().unwrap()),
+        locale: "cs".into(),
     };
 
     let verification = engine.verify(&outcome.claims[0].text).await.unwrap();

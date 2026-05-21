@@ -102,6 +102,7 @@ pub async fn analyze_text<R: Runtime>(
         outcome.claims,
         analysis.truncated,
         settings.cache_ttl_days,
+        &settings.locale,
     );
 
     Ok(analysis_id)
@@ -120,7 +121,7 @@ fn load_settings<R: Runtime>(app: &AppHandle<R>) -> Settings {
     settings
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn spawn_verifications<R: Runtime>(
     app: &AppHandle<R>,
     db: Db,
@@ -132,6 +133,7 @@ fn spawn_verifications<R: Runtime>(
     claims: Vec<Claim>,
     truncated: bool,
     cache_ttl_days: u32,
+    locale: &str,
 ) {
     use std::sync::atomic::{AtomicUsize, Ordering};
     use tokio::sync::{Mutex, Notify};
@@ -158,13 +160,14 @@ fn spawn_verifications<R: Runtime>(
         &analysis_id,
         &mut final_claims_vec,
         skipped_fact_claims,
+        locale,
     );
 
     let extractor = match Extractor::new() {
         Ok(extractor) => Arc::new(extractor),
         Err(_) => return,
     };
-    let search: Arc<dyn SearchProvider> = match BraveClient::new(brave_key) {
+    let search: Arc<dyn SearchProvider> = match BraveClient::new(brave_key, locale.to_string()) {
         Ok(client) => Arc::new(client),
         Err(_) => return,
     };
@@ -172,6 +175,7 @@ fn spawn_verifications<R: Runtime>(
         llm: provider,
         search,
         extractor,
+        locale: locale.to_string(),
     });
 
     let app = app.clone();
@@ -189,6 +193,7 @@ fn spawn_verifications<R: Runtime>(
         let done = done.clone();
         let notify = notify.clone();
         let final_claims = final_claims.clone();
+        let locale = locale.to_string();
 
         tokio::spawn(async move {
             let now = Utc::now().timestamp_millis();
@@ -203,7 +208,7 @@ fn spawn_verifications<R: Runtime>(
                     Err(error) => Verification {
                         status: VerificationStatus::NotFound,
                         sources: Vec::new(),
-                        summary: format!("Verifikace selhala: {error}"),
+                        summary: verification_failure_message(&locale, &error.to_string()),
                     },
                 },
             };
@@ -269,9 +274,10 @@ fn mark_skipped_fact_claims<R: Runtime>(
     analysis_id: &str,
     claims: &mut [Claim],
     skipped_fact_claims: Vec<Claim>,
+    locale: &str,
 ) {
     for claim in skipped_fact_claims {
-        let verification = skipped_fact_verification();
+        let verification = skipped_fact_verification(locale);
         if let Some(target) = claims.iter_mut().find(|candidate| candidate.id == claim.id) {
             target.verification = Some(verification.clone());
         }
@@ -288,10 +294,21 @@ fn mark_skipped_fact_claims<R: Runtime>(
 }
 
 #[must_use]
-fn skipped_fact_verification() -> Verification {
+fn skipped_fact_verification(locale: &str) -> Verification {
+    let summary = match locale {
+        "cs" => format!("Ověřuje se jen prvních {MAX_VERIFIED_CLAIMS} faktických tvrzení."),
+        _ => format!("Only the first {MAX_VERIFIED_CLAIMS} factual claims are verified."),
+    };
     Verification {
         status: VerificationStatus::NotVerified,
         sources: Vec::new(),
-        summary: format!("Ověřuje se jen prvních {MAX_VERIFIED_CLAIMS} faktických tvrzení."),
+        summary,
+    }
+}
+
+fn verification_failure_message(locale: &str, error: &str) -> String {
+    match locale {
+        "cs" => format!("Verifikace selhala: {error}"),
+        _ => format!("Verification failed: {error}"),
     }
 }

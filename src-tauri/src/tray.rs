@@ -3,9 +3,13 @@ use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager, Runtime};
 
-pub fn install<R: Runtime>(app: &AppHandle<R>) -> AppResult<TrayIcon<R>> {
-    let show_item = MenuItem::with_id(app, "show", "Otevřít Druhý názor", true, None::<&str>)?;
-    let quit_item = MenuItem::with_id(app, "quit", "Ukončit", true, None::<&str>)?;
+pub fn install<R: Runtime>(app: &AppHandle<R>, locale: &str) -> AppResult<TrayIcon<R>> {
+    let (show_label, quit_label) = match locale {
+        "cs" => ("Otevřít Druhý názor", "Ukončit"),
+        _ => ("Open Druhý názor", "Quit"),
+    };
+    let show_item = MenuItem::with_id(app, "show", show_label, true, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", quit_label, true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
     let tray = TrayIconBuilder::with_id("main")
