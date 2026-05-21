@@ -15,7 +15,10 @@
     "truncated_warning": "Vstup byl zkrácen na prvních 25 tvrzení.",
     "error_prefix": "Chyba: {msg}",
     "missing_key": "Nastav nejdřív Anthropic API klíč v Nastavení.",
-    "missing_keys": "Nastav nejdřív Anthropic a Brave Search API klíč v Nastavení."
+    "missing_keys": "Nastav nejdřív Brave Search API klíč a v Nastavení vyber LLM provider.",
+    "missing_brave_key": "Nastav nejdřív Brave Search API klíč v Nastavení.",
+    "missing_anthropic_key": "Nastav nejdřív Anthropic API klíč v Nastavení.",
+    "missing_cli_command": "V Nastavení vyplň CLI příkaz pro LLM."
   },
   "sidepanel": {
     "empty": "Klikni na zvýrazněné tvrzení vlevo.",
@@ -55,6 +58,15 @@
   },
   "settings": {
     "title": "Nastavení",
+    "provider_section": "LLM provider",
+    "provider_label": "Jak volat LLM",
+    "provider_cli": "Lokální CLI příkaz (doporučeno)",
+    "provider_anthropic": "Anthropic API (cloud)",
+    "cli_command_label": "CLI příkaz",
+    "cli_command_placeholder": "claude -p",
+    "cli_command_hint": "Příkaz dostane prompt na stdin a musí vrátit JSON na stdout. Příklady: 'claude -p', 'codex --print', 'ollama run llama3.2 --format json'.",
+    "anthropic_model_label": "Anthropic model",
+    "anthropic_model_placeholder": "claude-haiku-4-5-20251001",
     "anthropic_key_label": "Anthropic API klíč",
     "anthropic_key_placeholder": "sk-ant-…",
     "brave_key_label": "Brave Search API klíč",
@@ -66,7 +78,6 @@
     "key_missing": "Klíč zatím není uložen.",
     "locale_label": "Jazyk rozhraní",
     "hotkey_label": "Globální klávesová zkratka",
-    "model_label": "Výchozí model",
     "cache_ttl_label": "Doba platnosti cache (dny)",
     "back": "Zpět",
     "saved": "Nastavení uloženo."

@@ -54,30 +54,32 @@
     <h1>{t('settings.title')}</h1>
   </header>
 
-  <section>
-    <h2>{t('settings.anthropic_key_label')}</h2>
-    <p class="status">
-      {settings.anthropicPresent ? t('settings.key_present') : t('settings.key_missing')}
-    </p>
-    <div class="row">
-      <input
-        type="password"
-        bind:value={anthropicInput}
-        placeholder={t('settings.anthropic_key_placeholder')}
-        autocomplete="off"
-      />
-      <button type="button" onclick={() => saveKey(ACCOUNT_ANTHROPIC, anthropicInput)}>
-        {t('settings.save_key')}
-      </button>
-      <button
-        type="button"
-        onclick={() => removeKey(ACCOUNT_ANTHROPIC)}
-        disabled={!settings.anthropicPresent}
-      >
-        {t('settings.clear_key')}
-      </button>
-    </div>
-  </section>
+  {#if local.provider === 'anthropic'}
+    <section>
+      <h2>{t('settings.anthropic_key_label')}</h2>
+      <p class="status">
+        {settings.anthropicPresent ? t('settings.key_present') : t('settings.key_missing')}
+      </p>
+      <div class="row">
+        <input
+          type="password"
+          bind:value={anthropicInput}
+          placeholder={t('settings.anthropic_key_placeholder')}
+          autocomplete="off"
+        />
+        <button type="button" onclick={() => saveKey(ACCOUNT_ANTHROPIC, anthropicInput)}>
+          {t('settings.save_key')}
+        </button>
+        <button
+          type="button"
+          onclick={() => removeKey(ACCOUNT_ANTHROPIC)}
+          disabled={!settings.anthropicPresent}
+        >
+          {t('settings.clear_key')}
+        </button>
+      </div>
+    </section>
+  {/if}
 
   <section>
     <h2>{t('settings.brave_key_label')}</h2>
@@ -105,6 +107,41 @@
   </section>
 
   <section class="settings-grid">
+    <h2>{t('settings.provider_section')}</h2>
+    <label>
+      <span>{t('settings.provider_label')}</span>
+      <select bind:value={local.provider}>
+        <option value="cli">{t('settings.provider_cli')}</option>
+        <option value="anthropic">{t('settings.provider_anthropic')}</option>
+      </select>
+    </label>
+    {#if local.provider === 'cli'}
+      <label>
+        <span>{t('settings.cli_command_label')}</span>
+        <input
+          type="text"
+          bind:value={local.cli_command}
+          placeholder={t('settings.cli_command_placeholder')}
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <small class="hint">{t('settings.cli_command_hint')}</small>
+      </label>
+    {:else}
+      <label>
+        <span>{t('settings.anthropic_model_label')}</span>
+        <input
+          type="text"
+          bind:value={local.anthropic_model}
+          placeholder={t('settings.anthropic_model_placeholder')}
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </label>
+    {/if}
+  </section>
+
+  <section class="settings-grid">
     <label>
       <span>{t('settings.locale_label')}</span>
       <select bind:value={local.locale}>
@@ -115,10 +152,6 @@
     <label>
       <span>{t('settings.hotkey_label')}</span>
       <input type="text" bind:value={local.hotkey} />
-    </label>
-    <label>
-      <span>{t('settings.model_label')}</span>
-      <input type="text" bind:value={local.model} />
     </label>
     <label>
       <span>{t('settings.cache_ttl_label')}</span>

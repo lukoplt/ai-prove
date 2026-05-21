@@ -43,13 +43,20 @@ export interface Analysis {
   truncated: boolean;
 }
 
+export type ProviderKind = 'cli' | 'anthropic';
+
 export interface Settings {
   locale: 'cs' | 'en';
   hotkey: string;
-  model: string;
   cache_ttl_days: number;
   onboarded: boolean;
+  provider: ProviderKind;
+  anthropic_model: string;
+  cli_command: string;
 }
+
+export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
+export const DEFAULT_CLI_COMMAND = 'claude -p';
 
 export const ACCOUNT_ANTHROPIC = 'anthropic';
 export const ACCOUNT_BRAVE = 'brave';

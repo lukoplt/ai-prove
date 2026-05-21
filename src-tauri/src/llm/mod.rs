@@ -1,4 +1,5 @@
 pub mod anthropic;
+pub mod cli;
 pub mod mock;
 pub mod prompts;
 

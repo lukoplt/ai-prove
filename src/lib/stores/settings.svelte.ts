@@ -1,12 +1,20 @@
 import { getSettings, hasApiKey, setSettings } from '$lib/api';
-import { ACCOUNT_ANTHROPIC, ACCOUNT_BRAVE, type Settings } from '$lib/types';
+import {
+  ACCOUNT_ANTHROPIC,
+  ACCOUNT_BRAVE,
+  DEFAULT_ANTHROPIC_MODEL,
+  DEFAULT_CLI_COMMAND,
+  type Settings,
+} from '$lib/types';
 
 const defaults: Settings = {
   locale: 'cs',
   hotkey: 'CommandOrControl+Shift+D',
-  model: 'claude-haiku-4-5-20251001',
   cache_ttl_days: 7,
   onboarded: false,
+  provider: 'cli',
+  anthropic_model: DEFAULT_ANTHROPIC_MODEL,
+  cli_command: DEFAULT_CLI_COMMAND,
 };
 
 let current = $state<Settings>(defaults);

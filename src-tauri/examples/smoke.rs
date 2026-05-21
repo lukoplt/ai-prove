@@ -4,6 +4,7 @@
 // Run: cargo run --manifest-path src-tauri/Cargo.toml --example smoke
 
 use druhy_nazor_lib::llm::anthropic::AnthropicProvider;
+use druhy_nazor_lib::llm::cli::CliProvider;
 use druhy_nazor_lib::llm::mock::MockProvider;
 use druhy_nazor_lib::llm::prompts::{atomize_prompt, judge_prompt};
 use druhy_nazor_lib::llm::{
@@ -19,6 +20,7 @@ use druhy_nazor_lib::search::extract::Extractor;
 use druhy_nazor_lib::search::{MockSearch, SearchResult};
 use druhy_nazor_lib::storage::cache;
 use druhy_nazor_lib::storage::db::Db;
+use druhy_nazor_lib::storage::settings_store::ProviderKind;
 use druhy_nazor_lib::storage::settings_store::Settings;
 use std::sync::Arc;
 
@@ -93,24 +95,35 @@ async fn main() {
 
     println!("\n=== 4. prompt routing ===");
     check!(
-        "atomize_prompt(cs) contains 'Pracuj v češtině'",
-        atomize_prompt("cs").contains("Pracuj v češtině")
+        "atomize_prompt(cs, Anthropic) contains 'Pracuj v češtině'",
+        atomize_prompt("cs", ProviderKind::Anthropic).contains("Pracuj v češtině")
     );
     check!(
-        "atomize_prompt(en) contains 'Work in English'",
-        atomize_prompt("en").contains("Work in English")
+        "atomize_prompt(en, Anthropic) contains 'Work in English'",
+        atomize_prompt("en", ProviderKind::Anthropic).contains("Work in English")
     );
     check!(
-        "atomize_prompt(de) falls back to en",
-        atomize_prompt("de") == atomize_prompt("en")
+        "atomize_prompt(cs, Cli) requires JSON output (no markdown)",
+        atomize_prompt("cs", ProviderKind::Cli).contains("bez markdown")
     );
     check!(
-        "judge_prompt(cs) non-empty",
-        !judge_prompt("cs").trim().is_empty()
+        "atomize_prompt(en, Cli) requires JSON output (no markdown)",
+        atomize_prompt("en", ProviderKind::Cli).contains("no markdown")
     );
     check!(
-        "judge_prompt(en) non-empty",
-        !judge_prompt("en").trim().is_empty()
+        "atomize_prompt(de) falls back to en for Anthropic",
+        atomize_prompt("de", ProviderKind::Anthropic)
+            == atomize_prompt("en", ProviderKind::Anthropic)
+    );
+    check!(
+        "judge_prompt(cs, Anthropic) non-empty",
+        !judge_prompt("cs", ProviderKind::Anthropic)
+            .trim()
+            .is_empty()
+    );
+    check!(
+        "judge_prompt(en, Cli) non-empty",
+        !judge_prompt("en", ProviderKind::Cli).trim().is_empty()
     );
 
     println!("\n=== 5. atomize -> claims with offset resolution ===");
@@ -331,6 +344,52 @@ async fn main() {
         "cs".into(),
     );
     check!("AnthropicProvider::new ok", prov.is_ok());
+
+    println!("\n=== 11b. cli provider end-to-end (fake CLI via sh) ===");
+    check!(
+        "CliProvider::new rejects empty",
+        CliProvider::new("", "cs".into()).is_err()
+    );
+    check!(
+        "CliProvider::new parses 'ollama run llama3.2 --format json'",
+        CliProvider::new("ollama run llama3.2 --format json", "cs".into()).is_ok()
+    );
+
+    let canned_atomize = r#"sh -c 'cat >/dev/null; printf "%s" "{\"claims\":[{\"text\":\"Karel IV. se narodil v roce 1316\",\"kind\":\"fact\",\"reason\":\"datum\"}],\"truncated\":false}"'"#;
+    let cli_provider = CliProvider::new(canned_atomize, "cs".into()).expect("cli provider");
+    match cli_provider
+        .atomize("Karel IV. se narodil v roce 1316.")
+        .await
+    {
+        Ok(result) => {
+            check!("cli atomize returned 1 claim", result.claims.len() == 1);
+            check!(
+                "cli atomize verbatim text",
+                result.claims[0].text == "Karel IV. se narodil v roce 1316"
+            );
+        }
+        Err(e) => {
+            println!("    FAIL: {e}");
+            fails += 1;
+        }
+    }
+
+    let canned_judge =
+        r#"sh -c 'cat >/dev/null; printf "%s" "{\"stance\":\"supports\",\"quote\":\"1316\"}"'"#;
+    let cli_judge = CliProvider::new(canned_judge, "en".into()).expect("cli judge");
+    match cli_judge.judge("claim", "src").await {
+        Ok(v) => {
+            check!(
+                "cli judge stance supports",
+                v.stance == druhy_nazor_lib::llm::Stance::Supports
+            );
+            check!("cli judge quote present", v.quote == "1316");
+        }
+        Err(e) => {
+            println!("    FAIL: {e}");
+            fails += 1;
+        }
+    }
 
     println!("\n=== 12. live readability extraction (Czech Wikipedia) ===");
     let extractor = Extractor::new().expect("extractor");

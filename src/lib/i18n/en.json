@@ -15,7 +15,10 @@
     "truncated_warning": "Input was truncated to the first 25 claims.",
     "error_prefix": "Error: {msg}",
     "missing_key": "Set the Anthropic API key in Settings first.",
-    "missing_keys": "Set the Anthropic and Brave Search API keys in Settings first."
+    "missing_keys": "Set the Brave Search API key and pick an LLM provider in Settings first.",
+    "missing_brave_key": "Set the Brave Search API key in Settings first.",
+    "missing_anthropic_key": "Set the Anthropic API key in Settings first.",
+    "missing_cli_command": "Configure the LLM CLI command in Settings."
   },
   "sidepanel": {
     "empty": "Click a highlighted claim on the left.",
@@ -55,6 +58,15 @@
   },
   "settings": {
     "title": "Settings",
+    "provider_section": "LLM provider",
+    "provider_label": "How to call the LLM",
+    "provider_cli": "Local CLI command (recommended)",
+    "provider_anthropic": "Anthropic API (cloud)",
+    "cli_command_label": "CLI command",
+    "cli_command_placeholder": "claude -p",
+    "cli_command_hint": "The command receives the prompt on stdin and must print JSON to stdout. Examples: 'claude -p', 'codex --print', 'ollama run llama3.2 --format json'.",
+    "anthropic_model_label": "Anthropic model",
+    "anthropic_model_placeholder": "claude-haiku-4-5-20251001",
     "anthropic_key_label": "Anthropic API key",
     "anthropic_key_placeholder": "sk-ant-…",
     "brave_key_label": "Brave Search API key",
@@ -66,7 +78,6 @@
     "key_missing": "Key is not stored yet.",
     "locale_label": "Interface language",
     "hotkey_label": "Global hotkey",
-    "model_label": "Default model",
     "cache_ttl_label": "Cache TTL (days)",
     "back": "Back",
     "saved": "Settings saved."

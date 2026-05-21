@@ -4,13 +4,43 @@ use serde::{Deserialize, Serialize};
 pub const SETTINGS_FILE: &str = "settings.json";
 pub const SETTINGS_KEY: &str = "settings";
 
+pub const DEFAULT_ANTHROPIC_MODEL: &str = "claude-haiku-4-5-20251001";
+pub const DEFAULT_CLI_COMMAND: &str = "claude -p";
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ProviderKind {
+    #[default]
+    Cli,
+    Anthropic,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Settings {
     pub locale: String,
     pub hotkey: String,
-    pub model: String,
     pub cache_ttl_days: u32,
     pub onboarded: bool,
+
+    #[serde(default)]
+    pub provider: ProviderKind,
+
+    /// Anthropic model id (when `provider == Anthropic`).
+    #[serde(default = "default_anthropic_model")]
+    pub anthropic_model: String,
+
+    /// Shell command for the CLI provider (when `provider == Cli`).
+    /// Parsed via `shlex::split`. Example: `"claude -p"`, `"ollama run llama3.2 --format json"`.
+    #[serde(default = "default_cli_command")]
+    pub cli_command: String,
+}
+
+fn default_anthropic_model() -> String {
+    DEFAULT_ANTHROPIC_MODEL.to_string()
+}
+
+fn default_cli_command() -> String {
+    DEFAULT_CLI_COMMAND.to_string()
 }
 
 impl Default for Settings {
@@ -18,9 +48,11 @@ impl Default for Settings {
         Self {
             locale: "en".to_string(),
             hotkey: "CommandOrControl+Shift+D".to_string(),
-            model: "claude-haiku-4-5-20251001".to_string(),
             cache_ttl_days: 7,
             onboarded: false,
+            provider: ProviderKind::Cli,
+            anthropic_model: DEFAULT_ANTHROPIC_MODEL.to_string(),
+            cli_command: DEFAULT_CLI_COMMAND.to_string(),
         }
     }
 }
@@ -69,6 +101,20 @@ impl Settings {
             return Err(AppError::Invalid("hotkey cannot be empty".into()));
         }
 
+        match self.provider {
+            ProviderKind::Anthropic => {
+                if self.anthropic_model.trim().is_empty() {
+                    return Err(AppError::Invalid("anthropic_model cannot be empty".into()));
+                }
+            }
+            ProviderKind::Cli => {
+                let parts = shlex::split(&self.cli_command).unwrap_or_default();
+                if parts.is_empty() {
+                    return Err(AppError::Invalid("cli_command cannot be empty".into()));
+                }
+            }
+        }
+
         Ok(())
     }
 }
@@ -80,6 +126,11 @@ mod tests {
     #[test]
     fn default_settings_validate() {
         assert!(Settings::default().validate().is_ok());
+    }
+
+    #[test]
+    fn default_provider_is_cli() {
+        assert_eq!(Settings::default().provider, ProviderKind::Cli);
     }
 
     #[test]
@@ -119,11 +170,55 @@ mod tests {
     }
 
     #[test]
+    fn empty_cli_command_rejected() {
+        let settings = Settings {
+            provider: ProviderKind::Cli,
+            cli_command: "   ".into(),
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_err());
+    }
+
+    #[test]
+    fn empty_anthropic_model_rejected() {
+        let settings = Settings {
+            provider: ProviderKind::Anthropic,
+            anthropic_model: "  ".into(),
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_err());
+    }
+
+    #[test]
+    fn cli_command_with_args_validates() {
+        let settings = Settings {
+            provider: ProviderKind::Cli,
+            cli_command: "ollama run llama3.2 --format json".into(),
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_ok());
+    }
+
+    #[test]
     fn settings_roundtrip_json() {
         let settings = Settings::default();
         let json = serde_json::to_string(&settings).unwrap();
         let back: Settings = serde_json::from_str(&json).unwrap();
         assert_eq!(settings, back);
+    }
+
+    #[test]
+    fn legacy_settings_without_provider_fields_deserializes_via_defaults() {
+        let legacy = r#"{
+            "locale": "cs",
+            "hotkey": "CommandOrControl+Shift+D",
+            "cache_ttl_days": 7,
+            "onboarded": false
+        }"#;
+        let parsed: Settings = serde_json::from_str(legacy).unwrap();
+        assert_eq!(parsed.provider, ProviderKind::Cli);
+        assert_eq!(parsed.cli_command, DEFAULT_CLI_COMMAND);
+        assert_eq!(parsed.anthropic_model, DEFAULT_ANTHROPIC_MODEL);
     }
 
     #[test]

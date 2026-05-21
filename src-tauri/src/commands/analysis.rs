@@ -1,5 +1,6 @@
 use crate::error::{AppError, AppResult};
 use crate::llm::anthropic::AnthropicProvider;
+use crate::llm::cli::CliProvider;
 use crate::llm::LlmProvider;
 use crate::models::{Analysis, Claim, ClaimKind, Verification, VerificationStatus};
 use crate::pipeline::atomize_to_claims;
@@ -10,7 +11,7 @@ use crate::search::SearchProvider;
 use crate::storage::cache;
 use crate::storage::db::Db;
 use crate::storage::keychain;
-use crate::storage::settings_store::{Settings, SETTINGS_FILE, SETTINGS_KEY};
+use crate::storage::settings_store::{ProviderKind, Settings, SETTINGS_FILE, SETTINGS_KEY};
 use chrono::Utc;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Runtime, State};
@@ -20,6 +21,25 @@ use uuid::Uuid;
 pub const ACCOUNT_ANTHROPIC: &str = "anthropic";
 pub const ACCOUNT_BRAVE: &str = "brave";
 pub const MAX_VERIFIED_CLAIMS: usize = 8;
+
+fn build_llm_provider(settings: &Settings) -> AppResult<Arc<dyn LlmProvider>> {
+    match settings.provider {
+        ProviderKind::Anthropic => {
+            let key = keychain::get_api_key(ACCOUNT_ANTHROPIC)?
+                .ok_or_else(|| AppError::NotFound("anthropic key".into()))?;
+            let provider = AnthropicProvider::new(
+                key,
+                settings.anthropic_model.clone(),
+                settings.locale.clone(),
+            )?;
+            Ok(Arc::new(provider))
+        }
+        ProviderKind::Cli => {
+            let provider = CliProvider::new(&settings.cli_command, settings.locale.clone())?;
+            Ok(Arc::new(provider))
+        }
+    }
+}
 
 #[derive(Debug, serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -53,16 +73,10 @@ pub async fn analyze_text<R: Runtime>(
         return Err(AppError::Invalid("input is empty".into()));
     }
 
-    let anthropic_key = keychain::get_api_key(ACCOUNT_ANTHROPIC)?
-        .ok_or_else(|| AppError::NotFound("anthropic key".into()))?;
+    let settings = load_settings(&app);
     let brave_key = keychain::get_api_key(ACCOUNT_BRAVE)?
         .ok_or_else(|| AppError::NotFound("brave key".into()))?;
-    let settings = load_settings(&app);
-    let provider: Arc<dyn LlmProvider> = Arc::new(AnthropicProvider::new(
-        anthropic_key,
-        settings.model.clone(),
-        settings.locale.clone(),
-    )?);
+    let provider = build_llm_provider(&settings)?;
 
     let analysis_id = Uuid::now_v7().to_string();
     app.emit(

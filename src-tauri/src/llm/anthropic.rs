@@ -98,7 +98,10 @@ impl AnthropicProvider {
 #[async_trait]
 impl LlmProvider for AnthropicProvider {
     async fn atomize(&self, input: &str) -> AppResult<AtomizationResult> {
-        let system = crate::llm::prompts::atomize_prompt(&self.locale);
+        let system = crate::llm::prompts::atomize_prompt(
+            &self.locale,
+            crate::storage::settings_store::ProviderKind::Anthropic,
+        );
         let message = Message {
             role: "user",
             content: input,
@@ -109,7 +112,10 @@ impl LlmProvider for AnthropicProvider {
     }
 
     async fn judge(&self, claim: &str, source_text: &str) -> AppResult<JudgeVerdict> {
-        let system = crate::llm::prompts::judge_prompt(&self.locale);
+        let system = crate::llm::prompts::judge_prompt(
+            &self.locale,
+            crate::storage::settings_store::ProviderKind::Anthropic,
+        );
         let user_message = match self.locale.as_str() {
             "cs" => format!(
                 "Tvrzení:\n{claim}\n\nZdrojový text:\n{source_text}\n\nUrči stanovisko zdroje k tvrzení."

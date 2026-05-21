@@ -12,9 +12,29 @@
 
   let inputText = $state('');
 
+  function preflightError(): string | null {
+    if (!isTauriRuntime()) return null;
+    if (!settings.bravePresent) return t('summary.missing_brave_key');
+
+    const current = settings.current;
+    if (current.provider === 'anthropic') {
+      if (!settings.anthropicPresent) return t('summary.missing_anthropic_key');
+      if (!current.anthropic_model?.trim()) return t('summary.missing_anthropic_key');
+      return null;
+    }
+
+    if (current.provider === 'cli') {
+      if (!current.cli_command?.trim()) return t('summary.missing_cli_command');
+      return null;
+    }
+
+    return null;
+  }
+
   async function handleAnalyze(text: string) {
-    if (isTauriRuntime() && (!settings.anthropicPresent || !settings.bravePresent)) {
-      alert(t('summary.missing_keys'));
+    const error = preflightError();
+    if (error) {
+      alert(error);
       await goto(resolve('/settings'));
       return;
     }

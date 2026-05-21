@@ -1,6 +1,14 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { UnlistenFn } from '@tauri-apps/api/event';
-import type { Analysis, ApiAccount, Claim, Settings, Verification } from './types';
+import {
+  DEFAULT_ANTHROPIC_MODEL,
+  DEFAULT_CLI_COMMAND,
+  type Analysis,
+  type ApiAccount,
+  type Claim,
+  type Settings,
+  type Verification,
+} from './types';
 
 const SETTINGS_STORAGE_KEY = 'druhy-nazor:settings';
 const browserStartedHandlers = new Set<(event: AnalysisStartedEvent) => void>();
@@ -16,9 +24,11 @@ function browserDefaultSettings(): Settings {
   return {
     locale: language.toLowerCase().startsWith('cs') ? 'cs' : 'en',
     hotkey: 'CommandOrControl+Shift+D',
-    model: 'claude-haiku-4-5-20251001',
     cache_ttl_days: 7,
     onboarded: false,
+    provider: 'cli',
+    anthropic_model: DEFAULT_ANTHROPIC_MODEL,
+    cli_command: DEFAULT_CLI_COMMAND,
   };
 }
 
