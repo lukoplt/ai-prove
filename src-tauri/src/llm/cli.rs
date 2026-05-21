@@ -2,12 +2,31 @@ use super::{AtomizationResult, JudgeVerdict, LlmProvider, RawClaim, RawClaimKind
 use crate::error::{AppError, AppResult};
 use async_trait::async_trait;
 use serde::Deserialize;
+use std::env;
+use std::ffi::{OsStr, OsString};
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 use tokio::time::{timeout, Duration};
 
 const CLI_TIMEOUT: Duration = Duration::from_secs(180);
+const SYSTEM_PATH: &str = "/usr/bin:/bin:/usr/sbin:/sbin";
+const USER_BIN_DIRS: &[&str] = &[
+    ".local/bin",
+    ".npm-global/bin",
+    ".bun/bin",
+    ".cargo/bin",
+    ".deno/bin",
+];
+const FALLBACK_BIN_DIRS: &[&str] = &[
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+    "/usr/sbin",
+    "/sbin",
+];
 
 /// Spawns a user-configured shell command, pipes the prompt to its stdin, and
 /// parses the JSON object it writes to stdout. Designed for local-CLI LLM
@@ -36,8 +55,12 @@ impl CliProvider {
         prompt: String,
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = AppResult<String>> + Send + 'a>> {
         Box::pin(async move {
-            let mut cmd = Command::new(&self.command[0]);
+            let runtime_path = cli_runtime_path();
+            let program = resolve_program(&self.command[0], &runtime_path)
+                .unwrap_or_else(|| PathBuf::from(&self.command[0]));
+            let mut cmd = Command::new(&program);
             cmd.args(&self.command[1..])
+                .env("PATH", &runtime_path)
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped());
@@ -76,6 +99,69 @@ impl CliProvider {
             Ok(String::from_utf8_lossy(&output.stdout).into_owned())
         })
     }
+}
+
+fn cli_runtime_path() -> OsString {
+    build_cli_path(home_dir().as_deref(), env::var_os("PATH").as_deref())
+}
+
+fn home_dir() -> Option<PathBuf> {
+    env::var_os("HOME").map(PathBuf::from)
+}
+
+fn build_cli_path(home: Option<&Path>, inherited: Option<&OsStr>) -> OsString {
+    let mut dirs = Vec::new();
+
+    if let Some(inherited) = inherited {
+        for path in env::split_paths(inherited) {
+            push_unique_path(&mut dirs, path);
+        }
+    }
+
+    if let Some(home) = home {
+        for relative in USER_BIN_DIRS {
+            push_unique_path(&mut dirs, home.join(relative));
+        }
+    }
+
+    for fallback in FALLBACK_BIN_DIRS {
+        push_unique_path(&mut dirs, PathBuf::from(fallback));
+    }
+
+    env::join_paths(dirs).unwrap_or_else(|_| OsString::from(SYSTEM_PATH))
+}
+
+fn push_unique_path(paths: &mut Vec<PathBuf>, path: PathBuf) {
+    if path.as_os_str().is_empty() || paths.iter().any(|candidate| candidate == &path) {
+        return;
+    }
+    paths.push(path);
+}
+
+fn resolve_program(program: &str, runtime_path: &OsStr) -> Option<PathBuf> {
+    let requested = Path::new(program);
+    if requested.components().count() > 1 {
+        return is_executable(requested).then(|| requested.to_path_buf());
+    }
+
+    env::split_paths(runtime_path)
+        .map(|dir| dir.join(program))
+        .find(|candidate| is_executable(candidate))
+}
+
+#[cfg(unix)]
+fn is_executable(path: &Path) -> bool {
+    use std::os::unix::fs::PermissionsExt;
+
+    path.is_file()
+        && path
+            .metadata()
+            .is_ok_and(|metadata| metadata.permissions().mode() & 0o111 != 0)
+}
+
+#[cfg(not(unix))]
+fn is_executable(path: &Path) -> bool {
+    path.is_file()
 }
 
 #[async_trait]
@@ -347,6 +433,31 @@ mod tests {
             CliProvider::new(r#"my-llm --system "you are helpful""#, "en".into()).unwrap();
         assert_eq!(provider.command.len(), 3);
         assert_eq!(provider.command[2], "you are helpful");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn resolve_program_finds_home_local_bin_when_inherited_path_is_gui_default() {
+        use std::fs;
+        use std::os::unix::fs::PermissionsExt;
+
+        let root =
+            std::env::temp_dir().join(format!("druhy-nazor-cli-path-{}", std::process::id()));
+        let home = root.join("home");
+        let bin_dir = home.join(".local/bin");
+        let program = bin_dir.join("claude");
+        fs::create_dir_all(&bin_dir).unwrap();
+        fs::write(&program, "#!/bin/sh\nexit 0\n").unwrap();
+        fs::set_permissions(&program, fs::Permissions::from_mode(0o755)).unwrap();
+
+        let path = build_cli_path(
+            Some(&home),
+            Some(std::ffi::OsStr::new("/usr/bin:/bin:/usr/sbin:/sbin")),
+        );
+
+        assert_eq!(resolve_program("claude", &path).unwrap(), program);
+
+        let _ = fs::remove_dir_all(root);
     }
 
     #[tokio::test]
