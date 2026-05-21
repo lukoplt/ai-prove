@@ -205,12 +205,14 @@ function browserPreviewStrings(locale: 'cs' | 'en') {
     return {
       claimReason: 'Lokální vývojový náhled bez volání LLM.',
       verifiedSummary: 'Lokální vývojový náhled: tvrzení je označeno jako ověřené.',
+      skippedSummary: 'Ověřuje se jen prvních 8 faktických tvrzení.',
       sampleSourceTitle: 'Ukázkový zdroj pro lokální náhled',
     };
   }
   return {
     claimReason: 'Local development preview without LLM calls.',
     verifiedSummary: 'Local development preview: claim is marked as supported.',
+    skippedSummary: 'Only the first 8 factual claims are verified.',
     sampleSourceTitle: 'Sample source for local preview',
   };
 }
@@ -262,33 +264,48 @@ function browserKind(text: string): Claim['kind'] {
 
 function queueBrowserVerifications(analysisId: string, claims: Claim[]): void {
   const locale = browserLocale();
-  const { verifiedSummary, sampleSourceTitle } = browserPreviewStrings(locale);
+  const { verifiedSummary, skippedSummary, sampleSourceTitle } = browserPreviewStrings(locale);
+  const factClaims = claims.filter((claim) => claim.kind === 'fact');
 
-  claims
-    .filter((claim) => claim.kind === 'fact')
-    .slice(0, 8)
-    .forEach((claim, index) => {
-      setTimeout(
-        () => {
-          emitBrowserVerified({
-            analysisId,
-            claimId: claim.id,
-            verification: {
-              status: 'supported',
-              summary: verifiedSummary,
-              sources: [
-                {
-                  url: 'https://cs.wikipedia.org/wiki/Karel_IV',
-                  title: sampleSourceTitle,
-                  snippet: claim.text,
-                  tier: 'a',
-                  stance: 'supports',
-                },
-              ],
-            },
-          });
-        },
-        450 + index * 350,
-      );
-    });
+  factClaims.slice(0, 8).forEach((claim, index) => {
+    setTimeout(
+      () => {
+        emitBrowserVerified({
+          analysisId,
+          claimId: claim.id,
+          verification: {
+            status: 'supported',
+            summary: verifiedSummary,
+            sources: [
+              {
+                url: 'https://cs.wikipedia.org/wiki/Karel_IV',
+                title: sampleSourceTitle,
+                snippet: claim.text,
+                tier: 'a',
+                stance: 'supports',
+              },
+            ],
+          },
+        });
+      },
+      450 + index * 350,
+    );
+  });
+
+  factClaims.slice(8).forEach((claim, index) => {
+    setTimeout(
+      () => {
+        emitBrowserVerified({
+          analysisId,
+          claimId: claim.id,
+          verification: {
+            status: 'not_verified',
+            summary: skippedSummary,
+            sources: [],
+          },
+        });
+      },
+      450 + (8 + index) * 120,
+    );
+  });
 }

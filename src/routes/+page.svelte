@@ -19,7 +19,7 @@
     const current = settings.current;
     if (current.provider === 'anthropic') {
       if (!settings.anthropicPresent) return t('summary.missing_anthropic_key');
-      if (!current.anthropic_model?.trim()) return t('summary.missing_anthropic_key');
+      if (!current.anthropic_model?.trim()) return t('summary.missing_anthropic_model');
       return null;
     }
 

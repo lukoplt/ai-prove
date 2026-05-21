@@ -272,7 +272,7 @@ async fn main() {
         llm: Arc::new(llm_full),
         search: Arc::new(MockSearch {
             results: vec![SearchResult {
-                url: "https://cs.wikipedia.org/wiki/Karel_IV.".into(),
+                url: "https://cs.wikipedia.org/wiki/Karel_IV".into(),
                 title: "Karel IV.".into(),
                 snippet: "1316".into(),
             }],
@@ -307,7 +307,10 @@ async fn main() {
     );
     check!(
         "source tier from wikipedia is A",
-        verification.sources[0].tier == SourceTier::A
+        verification
+            .sources
+            .first()
+            .is_some_and(|source| source.tier == SourceTier::A)
     );
 
     println!("\n=== 10. en-locale verify summary ===");
@@ -320,7 +323,7 @@ async fn main() {
         llm: Arc::new(llm_en),
         search: Arc::new(MockSearch {
             results: vec![SearchResult {
-                url: "https://cs.wikipedia.org/wiki/Karel_IV.".into(),
+                url: "https://cs.wikipedia.org/wiki/Karel_IV".into(),
                 title: "Karel IV.".into(),
                 snippet: "1316".into(),
             }],
@@ -394,7 +397,7 @@ async fn main() {
     println!("\n=== 12. live readability extraction (Czech Wikipedia) ===");
     let extractor = Extractor::new().expect("extractor");
     match extractor
-        .fetch_and_extract("https://cs.wikipedia.org/wiki/Karel_IV.")
+        .fetch_and_extract("https://cs.wikipedia.org/wiki/Karel_IV")
         .await
     {
         Ok(body) => {

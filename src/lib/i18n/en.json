@@ -18,6 +18,7 @@
     "missing_keys": "Set the Brave Search API key and pick an LLM provider in Settings first.",
     "missing_brave_key": "Set the Brave Search API key in Settings first.",
     "missing_anthropic_key": "Set the Anthropic API key in Settings first.",
+    "missing_anthropic_model": "Configure the Anthropic model in Settings.",
     "missing_cli_command": "Configure the LLM CLI command in Settings."
   },
   "sidepanel": {
