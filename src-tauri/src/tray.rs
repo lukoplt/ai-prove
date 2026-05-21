@@ -12,7 +12,7 @@ pub fn install<R: Runtime>(app: &AppHandle<R>, locale: &str) -> AppResult<TrayIc
     let quit_item = MenuItem::with_id(app, "quit", quit_label, true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
-    let tray = TrayIconBuilder::with_id("main")
+    let mut builder = TrayIconBuilder::with_id("main")
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "show" => focus_main(app),
@@ -25,8 +25,13 @@ pub fn install<R: Runtime>(app: &AppHandle<R>, locale: &str) -> AppResult<TrayIc
                     focus_main(tray.app_handle());
                 }
             }
-        })
-        .build(app)?;
+        });
+
+    if let Some(icon) = app.default_window_icon().cloned() {
+        builder = builder.icon(icon).icon_as_template(true);
+    }
+
+    let tray = builder.build(app)?;
     Ok(tray)
 }
 

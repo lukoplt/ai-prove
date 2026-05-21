@@ -185,7 +185,29 @@ function buildBrowserAnalysis(id: string, input: string): Analysis {
   };
 }
 
+function browserLocale(): 'cs' | 'en' {
+  const language = typeof navigator === 'undefined' ? 'en' : navigator.language;
+  return language.toLowerCase().startsWith('cs') ? 'cs' : 'en';
+}
+
+function browserPreviewStrings(locale: 'cs' | 'en') {
+  if (locale === 'cs') {
+    return {
+      claimReason: 'Lokální vývojový náhled bez volání LLM.',
+      verifiedSummary: 'Lokální vývojový náhled: tvrzení je označeno jako ověřené.',
+      sampleSourceTitle: 'Ukázkový zdroj pro lokální náhled',
+    };
+  }
+  return {
+    claimReason: 'Local development preview without LLM calls.',
+    verifiedSummary: 'Local development preview: claim is marked as supported.',
+    sampleSourceTitle: 'Sample source for local preview',
+  };
+}
+
 function browserClaims(input: string): Claim[] {
+  const locale = browserLocale();
+  const reason = browserPreviewStrings(locale).claimReason;
   const matches = [...input.matchAll(/[^.!?\n]+[.!?]?/g)].filter((match) => match[0].trim());
   return matches.map((match, index) => {
     const raw = match[0];
@@ -199,7 +221,7 @@ function browserClaims(input: string): Claim[] {
       start,
       end,
       kind: browserKind(text),
-      reason: 'Lokální vývojový náhled bez volání LLM.',
+      reason,
       verification: null,
     };
   });
@@ -207,14 +229,31 @@ function browserClaims(input: string): Claim[] {
 
 function browserKind(text: string): Claim['kind'] {
   const lower = text.toLowerCase();
-  if (lower.includes('podle mě') || lower.includes('nejlepší') || lower.includes('skvěl')) {
+  const opinionMarkers = [
+    'podle mě',
+    'nejlepší',
+    'skvěl',
+    'in my opinion',
+    'i think',
+    'best',
+    'great',
+  ];
+  if (opinionMarkers.some((marker) => lower.includes(marker))) {
     return 'opinion';
   }
-  if (lower.includes('protože') || lower.includes('vyplývá')) return 'inference';
+
+  const inferenceMarkers = ['protože', 'vyplývá', 'therefore', 'because', 'follows that'];
+  if (inferenceMarkers.some((marker) => lower.includes(marker))) {
+    return 'inference';
+  }
+
   return 'fact';
 }
 
 function queueBrowserVerifications(analysisId: string, claims: Claim[]): void {
+  const locale = browserLocale();
+  const { verifiedSummary, sampleSourceTitle } = browserPreviewStrings(locale);
+
   claims
     .filter((claim) => claim.kind === 'fact')
     .slice(0, 8)
@@ -226,11 +265,11 @@ function queueBrowserVerifications(analysisId: string, claims: Claim[]): void {
             claimId: claim.id,
             verification: {
               status: 'supported',
-              summary: 'Lokální vývojový náhled: tvrzení je označeno jako ověřené.',
+              summary: verifiedSummary,
               sources: [
                 {
                   url: 'https://cs.wikipedia.org/wiki/Karel_IV',
-                  title: 'Ukázkový zdroj pro lokální náhled',
+                  title: sampleSourceTitle,
                   snippet: claim.text,
                   tier: 'a',
                   stance: 'supports',
