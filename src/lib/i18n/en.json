@@ -11,6 +11,7 @@
     "answer_placeholder": "Paste the AI answer you want to verify…",
     "analyze": "Analyze",
     "clear": "Clear",
+    "clear_answer": "Clear answer",
     "paste_from_clipboard": "Paste from clipboard"
   },
   "summary": {

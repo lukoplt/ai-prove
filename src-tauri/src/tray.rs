@@ -35,9 +35,23 @@ pub fn install<R: Runtime>(app: &AppHandle<R>, locale: &str) -> AppResult<TrayIc
     Ok(tray)
 }
 
-fn focus_main<R: Runtime>(app: &AppHandle<R>) {
+pub fn focus_main<R: Runtime>(app: &AppHandle<R>) {
+    set_dock_icon_visible(app, true);
+
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
         let _ = window.set_focus();
+    }
+}
+
+pub fn set_dock_icon_visible<R: Runtime>(app: &AppHandle<R>, visible: bool) {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app.set_dock_visibility(visible);
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (app, visible);
     }
 }

@@ -25,6 +25,10 @@
     answer = '';
   }
 
+  function clearAnswer() {
+    answer = '';
+  }
+
   function onDragOver(event: DragEvent) {
     event.preventDefault();
     dragging = true;
@@ -81,6 +85,9 @@
   </label>
   <div class="bar">
     <button type="button" onclick={paste}>{t('input.paste_from_clipboard')}</button>
+    <button type="button" onclick={clearAnswer} disabled={!answer}>
+      {t('input.clear_answer')}
+    </button>
     <button type="button" onclick={clear} disabled={!question && !answer}>
       {t('input.clear')}
     </button>
@@ -129,6 +136,7 @@
 
   .bar {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     align-items: center;
   }
