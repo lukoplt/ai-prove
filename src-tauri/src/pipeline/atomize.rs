@@ -14,11 +14,20 @@ pub async fn atomize_to_claims(
     provider: &dyn LlmProvider,
     input: &str,
 ) -> AppResult<AtomizationOutcome> {
+    atomize_to_claims_with_context(provider, input, None).await
+}
+
+pub async fn atomize_to_claims_with_context(
+    provider: &dyn LlmProvider,
+    answer: &str,
+    question: Option<&str>,
+) -> AppResult<AtomizationOutcome> {
+    let provider_input = build_atomization_input(answer, question);
     let AtomizationResult {
         claims: raw,
         truncated,
-    } = provider.atomize(input).await?;
-    let resolved = resolve_offsets(input, raw);
+    } = provider.atomize(&provider_input).await?;
+    let resolved = resolve_offsets(answer, raw);
     let truncated = truncated || resolved.len() > MAX_CLAIMS;
     let mut taken: Vec<Claim> = resolved.into_iter().take(MAX_CLAIMS).collect();
 
@@ -30,6 +39,16 @@ pub async fn atomize_to_claims(
         claims: taken,
         truncated,
     })
+}
+
+fn build_atomization_input(answer: &str, question: Option<&str>) -> String {
+    let Some(question) = question.map(str::trim).filter(|value| !value.is_empty()) else {
+        return answer.to_string();
+    };
+
+    format!(
+        "USER QUESTION (context only; do not atomize):\n{question}\n\nAI ANSWER TO ANALYZE:\n{answer}"
+    )
 }
 
 fn resolve_offsets(input: &str, raw: Vec<RawClaim>) -> Vec<Claim> {
@@ -126,6 +145,28 @@ mod tests {
         assert!(out.claims[1].start < out.claims[2].start);
         assert_eq!(
             slice_chars(input, out.claims[0].start, out.claims[0].end),
+            out.claims[0].text
+        );
+    }
+
+    #[tokio::test]
+    async fn context_question_does_not_shift_answer_offsets() {
+        let question = "Kdy se narodil Karel IV.?";
+        let answer = "Karel IV. se narodil v roce 1316.";
+        let provider = MockProvider::new();
+        provider.push_atomize(AtomizationResult {
+            claims: vec![raw("Karel IV. se narodil v roce 1316", RawClaimKind::Fact)],
+            truncated: false,
+        });
+
+        let out = atomize_to_claims_with_context(&provider, answer, Some(question))
+            .await
+            .unwrap();
+
+        assert_eq!(out.claims.len(), 1);
+        assert_eq!(out.claims[0].start, 0);
+        assert_eq!(
+            slice_chars(answer, out.claims[0].start, out.claims[0].end),
             out.claims[0].text
         );
     }

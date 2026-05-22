@@ -1,5 +1,5 @@
 import { analyzeText, onAnalysisClaims, onAnalysisStarted, onClaimVerified } from '$lib/api';
-import type { Analysis, Claim } from '$lib/types';
+import type { Analysis, AnalyzeInput, Claim } from '$lib/types';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
 type Status = 'idle' | 'running' | 'done' | 'error';
@@ -64,11 +64,11 @@ export const analysisStore = {
     await ensureSubscriptions();
   },
 
-  async run(text: string): Promise<void> {
+  async run(input: string | AnalyzeInput): Promise<void> {
     await ensureSubscriptions();
     error = null;
     try {
-      await analyzeText(text);
+      await analyzeText(input);
     } catch (caught) {
       status = 'error';
       error = String(caught);

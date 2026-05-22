@@ -3,6 +3,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import {
   DEFAULT_ANTHROPIC_MODEL,
   DEFAULT_CLI_COMMAND,
+  type AnalyzeInput,
   type Analysis,
   type ApiAccount,
   type Claim,
@@ -95,11 +96,17 @@ export async function readClipboardText(): Promise<string> {
   }
 }
 
-export async function analyzeText(text: string): Promise<string> {
-  if (isTauriRuntime()) return invoke<string>('analyze_text', { text });
+export async function analyzeText(input: string | AnalyzeInput): Promise<string> {
+  const request = normalizeAnalyzeInput(input);
+  if (isTauriRuntime()) {
+    return invoke<string>('analyze_text', {
+      question: request.question,
+      answer: request.answer,
+    });
+  }
 
   const analysisId = crypto.randomUUID();
-  const trimmed = text.trim();
+  const trimmed = request.answer.trim();
   emitBrowserStarted({ analysisId });
   await new Promise((resolve) => setTimeout(resolve, 250));
   const analysis = buildBrowserAnalysis(analysisId, trimmed);
@@ -109,6 +116,17 @@ export async function analyzeText(text: string): Promise<string> {
   });
   queueBrowserVerifications(analysisId, analysis.claims);
   return analysisId;
+}
+
+function normalizeAnalyzeInput(input: string | AnalyzeInput): AnalyzeInput {
+  if (typeof input === 'string') {
+    return { answer: input };
+  }
+
+  return {
+    question: input.question?.trim(),
+    answer: input.answer,
+  };
 }
 
 export interface AnalysisStartedEvent {

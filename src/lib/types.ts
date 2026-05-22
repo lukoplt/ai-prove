@@ -43,6 +43,11 @@ export interface Analysis {
   truncated: boolean;
 }
 
+export interface AnalyzeInput {
+  question?: string;
+  answer: string;
+}
+
 export type ProviderKind = 'cli' | 'anthropic';
 
 export interface Settings {

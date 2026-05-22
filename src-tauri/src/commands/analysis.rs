@@ -3,7 +3,7 @@ use crate::llm::anthropic::AnthropicProvider;
 use crate::llm::cli::CliProvider;
 use crate::llm::LlmProvider;
 use crate::models::{Analysis, Claim, ClaimKind, Verification, VerificationStatus};
-use crate::pipeline::atomize_to_claims;
+use crate::pipeline::atomize_to_claims_with_context;
 use crate::pipeline::verify::VerificationEngine;
 use crate::search::brave::BraveClient;
 use crate::search::extract::Extractor;
@@ -66,12 +66,19 @@ pub struct ClaimVerifiedEvent {
 pub async fn analyze_text<R: Runtime>(
     app: AppHandle<R>,
     db: State<'_, Db>,
-    text: String,
+    text: Option<String>,
+    question: Option<String>,
+    answer: Option<String>,
 ) -> AppResult<String> {
-    let trimmed = text.trim();
-    if trimmed.is_empty() {
-        return Err(AppError::Invalid("input is empty".into()));
+    let answer = answer.or(text).unwrap_or_default();
+    let trimmed_answer = answer.trim();
+    if trimmed_answer.is_empty() {
+        return Err(AppError::Invalid("answer is empty".into()));
     }
+    let question = question
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty());
 
     let settings = load_settings(&app);
     let brave_key = keychain::get_api_key(ACCOUNT_BRAVE)?.filter(|key| !key.trim().is_empty());
@@ -86,11 +93,12 @@ pub async fn analyze_text<R: Runtime>(
     )
     .map_err(|error| AppError::Other(format!("emit: {error}")))?;
 
-    let outcome = atomize_to_claims(provider.as_ref(), trimmed).await?;
+    let outcome =
+        atomize_to_claims_with_context(provider.as_ref(), trimmed_answer, question).await?;
     let analysis = Analysis {
         id: analysis_id.clone(),
         created_at: Utc::now().timestamp_millis(),
-        input: trimmed.to_string(),
+        input: trimmed_answer.to_string(),
         claims: outcome.claims.clone(),
         truncated: outcome.truncated,
     };
@@ -110,7 +118,7 @@ pub async fn analyze_text<R: Runtime>(
         provider,
         brave_key,
         analysis_id.clone(),
-        trimmed.to_string(),
+        trimmed_answer.to_string(),
         analysis.created_at,
         outcome.claims,
         analysis.truncated,

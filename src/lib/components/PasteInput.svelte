@@ -1,21 +1,28 @@
 <script lang="ts">
   import { readClipboardText } from '$lib/api';
   import { t } from '$lib/stores/i18n.svelte';
+  import type { AnalyzeInput } from '$lib/types';
 
   let {
-    value = $bindable(''),
+    question = $bindable(''),
+    answer = $bindable(''),
     onAnalyze = () => {},
-  }: { value?: string; onAnalyze?: (text: string) => void } = $props();
+  }: {
+    question?: string;
+    answer?: string;
+    onAnalyze?: (input: AnalyzeInput) => void;
+  } = $props();
 
   let dragging = $state(false);
 
   async function paste() {
     const text = await readClipboardText();
-    if (text) value = text;
+    if (text) answer = text;
   }
 
   function clear() {
-    value = '';
+    question = '';
+    answer = '';
   }
 
   function onDragOver(event: DragEvent) {
@@ -31,12 +38,17 @@
     event.preventDefault();
     dragging = false;
     const text = event.dataTransfer?.getData('text/plain') ?? '';
-    if (text) value = text;
+    if (text) answer = text;
   }
 
   function analyze() {
-    const trimmed = value.trim();
-    if (trimmed) onAnalyze(trimmed);
+    const trimmedAnswer = answer.trim();
+    if (trimmedAnswer) {
+      onAnalyze({
+        question: question.trim(),
+        answer: trimmedAnswer,
+      });
+    }
   }
 </script>
 
@@ -49,12 +61,31 @@
   ondragleave={onDragLeave}
   ondrop={onDrop}
 >
-  <textarea bind:value placeholder={t('input.placeholder')} rows={12} spellcheck="false"></textarea>
+  <label>
+    <span>{t('input.question_label')}</span>
+    <textarea
+      bind:value={question}
+      placeholder={t('input.question_placeholder')}
+      rows={4}
+      spellcheck="false"
+    ></textarea>
+  </label>
+  <label>
+    <span>{t('input.answer_label')}</span>
+    <textarea
+      bind:value={answer}
+      placeholder={t('input.answer_placeholder')}
+      rows={12}
+      spellcheck="false"
+    ></textarea>
+  </label>
   <div class="bar">
     <button type="button" onclick={paste}>{t('input.paste_from_clipboard')}</button>
-    <button type="button" onclick={clear} disabled={!value}>{t('input.clear')}</button>
+    <button type="button" onclick={clear} disabled={!question && !answer}>
+      {t('input.clear')}
+    </button>
     <div class="spacer"></div>
-    <button type="button" class="primary" onclick={analyze} disabled={!value.trim()}>
+    <button type="button" class="primary" onclick={analyze} disabled={!answer.trim()}>
       {t('input.analyze')}
     </button>
   </div>
@@ -70,15 +101,30 @@
     transition: border-color 120ms ease;
   }
 
+  label {
+    display: grid;
+    gap: 6px;
+  }
+
+  span {
+    color: #52525b;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
   .wrap.dragging {
     border-color: #2563eb;
   }
 
   textarea {
     width: 100%;
-    min-height: 300px;
     padding: 14px;
     resize: vertical;
+  }
+
+  label:last-of-type textarea {
+    min-height: 260px;
   }
 
   .bar {

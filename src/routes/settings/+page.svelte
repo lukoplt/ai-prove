@@ -2,12 +2,19 @@
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { clearApiKey, setApiKey } from '$lib/api';
+  import {
+    CLI_PRESETS,
+    commandToCliPreset,
+    presetCommand,
+    type CliPresetId,
+  } from '$lib/cliPresets';
   import { setLocale } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
   import { t } from '$lib/stores/i18n.svelte';
   import { ACCOUNT_ANTHROPIC, ACCOUNT_BRAVE, type ApiAccount, type Settings } from '$lib/types';
 
   let local: Settings = $state({ ...settings.current });
+  let cliPreset: CliPresetId = $state(commandToCliPreset(local.cli_command));
   let anthropicInput = $state('');
   let braveInput = $state('');
   let saving = $state(false);
@@ -45,6 +52,15 @@
   async function removeKey(account: ApiAccount) {
     await clearApiKey(account);
     await settings.refreshKeyState();
+  }
+
+  function applyCliPreset() {
+    const command = presetCommand(cliPreset);
+    if (command) local.cli_command = command;
+  }
+
+  function syncCliPreset() {
+    cliPreset = commandToCliPreset(local.cli_command);
   }
 </script>
 
@@ -118,10 +134,19 @@
     </label>
     {#if local.provider === 'cli'}
       <label>
+        <span>{t('settings.cli_preset_label')}</span>
+        <select bind:value={cliPreset} onchange={applyCliPreset}>
+          {#each CLI_PRESETS as preset (preset.id)}
+            <option value={preset.id}>{t(`settings.cli_preset_${preset.id}`)}</option>
+          {/each}
+        </select>
+      </label>
+      <label>
         <span>{t('settings.cli_command_label')}</span>
         <input
           type="text"
           bind:value={local.cli_command}
+          oninput={syncCliPreset}
           placeholder={t('settings.cli_command_placeholder')}
           autocomplete="off"
           spellcheck="false"

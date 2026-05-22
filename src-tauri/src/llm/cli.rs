@@ -1,6 +1,7 @@
 use super::{AtomizationResult, JudgeVerdict, LlmProvider, RawClaim, RawClaimKind, Stance};
 use crate::error::{AppError, AppResult};
 use async_trait::async_trait;
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::env;
 use std::ffi::{OsStr, OsString};
@@ -173,10 +174,7 @@ impl LlmProvider for CliProvider {
         );
         let prompt = format!("{system}\n\n=== INPUT ===\n{input}\n");
         let raw = self.run(prompt).await?;
-        let json = extract_json_object(&raw)
-            .ok_or_else(|| AppError::Other(format!("cli atomize: no JSON in output: {raw}")))?;
-        let parsed: RawAtomize = serde_json::from_str(&json)
-            .map_err(|e| AppError::Other(format!("cli atomize JSON parse: {e}; raw={raw}")))?;
+        let parsed: RawAtomize = parse_cli_json_object(&raw, "atomize")?;
         parsed.into_result()
     }
 
@@ -195,10 +193,7 @@ impl LlmProvider for CliProvider {
         };
         let prompt = format!("{system}\n\n=== INPUT ===\n{user}\n");
         let raw = self.run(prompt).await?;
-        let json = extract_json_object(&raw)
-            .ok_or_else(|| AppError::Other(format!("cli judge: no JSON in output: {raw}")))?;
-        let parsed: RawJudge = serde_json::from_str(&json)
-            .map_err(|e| AppError::Other(format!("cli judge JSON parse: {e}; raw={raw}")))?;
+        let parsed: RawJudge = parse_cli_json_object(&raw, "judge")?;
         parsed.into_verdict()
     }
 }
@@ -282,13 +277,7 @@ fn parse_kind(kind: &str) -> AppResult<RawClaimKind> {
 /// no balanced `{...}` is found.
 pub(crate) fn extract_json_object(text: &str) -> Option<String> {
     // Strip code fences first if present.
-    let cleaned = text
-        .trim()
-        .trim_start_matches("```json")
-        .trim_start_matches("```JSON")
-        .trim_start_matches("```")
-        .trim_end_matches("```")
-        .trim();
+    let cleaned = strip_json_fences(text);
 
     let bytes = cleaned.as_bytes();
     let mut start: Option<usize> = None;
@@ -328,6 +317,87 @@ pub(crate) fn extract_json_object(text: &str) -> Option<String> {
         }
     }
     None
+}
+
+fn strip_json_fences(text: &str) -> &str {
+    text.trim()
+        .trim_start_matches("```json")
+        .trim_start_matches("```JSON")
+        .trim_start_matches("```")
+        .trim_end_matches("```")
+        .trim()
+}
+
+fn extract_jsonish_object(text: &str) -> Option<String> {
+    let cleaned = strip_json_fences(text);
+    let start = cleaned.find('{')?;
+    let end = cleaned.rfind('}')?;
+    (start <= end).then(|| cleaned[start..=end].to_string())
+}
+
+fn parse_cli_json_object<T: DeserializeOwned>(raw: &str, stage: &str) -> AppResult<T> {
+    let json = extract_json_object(raw)
+        .or_else(|| extract_jsonish_object(raw))
+        .ok_or_else(|| AppError::Other(format!("cli {stage}: no JSON in output: {raw}")))?;
+
+    serde_json::from_str(&json).or_else(|original_error| {
+        let repaired = repair_unescaped_string_quotes(&json);
+        if repaired == json {
+            return Err(AppError::Other(format!(
+                "cli {stage} JSON parse: {original_error}; raw={raw}"
+            )));
+        }
+
+        serde_json::from_str(&repaired).map_err(|repair_error| {
+            AppError::Other(format!(
+                "cli {stage} JSON parse: {original_error}; repair failed: {repair_error}; raw={raw}"
+            ))
+        })
+    })
+}
+
+fn repair_unescaped_string_quotes(json: &str) -> String {
+    let mut repaired = String::with_capacity(json.len());
+    let mut in_string = false;
+    let mut escape = false;
+
+    for (index, ch) in json.char_indices() {
+        if !in_string {
+            if ch == '"' {
+                in_string = true;
+            }
+            repaired.push(ch);
+            continue;
+        }
+
+        if escape {
+            escape = false;
+            repaired.push(ch);
+            continue;
+        }
+
+        match ch {
+            '\\' => {
+                escape = true;
+                repaired.push(ch);
+            }
+            '"' if quote_closes_json_string(json, index + ch.len_utf8()) => {
+                in_string = false;
+                repaired.push(ch);
+            }
+            '"' => repaired.push_str("\\\""),
+            _ => repaired.push(ch),
+        }
+    }
+
+    repaired
+}
+
+fn quote_closes_json_string(json: &str, after_quote: usize) -> bool {
+    match json[after_quote..].chars().find(|ch| !ch.is_whitespace()) {
+        Some(ch) => matches!(ch, ':' | ',' | '}' | ']'),
+        None => true,
+    }
 }
 
 #[cfg(test)]
@@ -511,5 +581,26 @@ mod tests {
         let provider = CliProvider::new(cmd, "en".into()).unwrap();
         let err = provider.atomize("x").await.unwrap_err();
         assert!(err.to_string().contains("no JSON"));
+    }
+
+    #[tokio::test]
+    async fn cli_atomize_repairs_unescaped_quote_inside_claim_text() {
+        let broken_json = r#"{"claims":[{"text":"kombinace: fine-tuning pro „jazykový cit" + RAG","kind":"fact","reason":"r"}],"truncated":false}"#;
+        let cmd = format!(
+            r#"sh -c 'cat >/dev/null; printf %s "{}"'"#,
+            broken_json.replace('"', r#"\""#)
+        );
+        let provider = CliProvider::new(&cmd, "cs".into()).unwrap();
+
+        let result = provider
+            .atomize("kombinace: fine-tuning pro „jazykový cit\" + RAG")
+            .await
+            .unwrap();
+
+        assert_eq!(result.claims.len(), 1);
+        assert_eq!(
+            result.claims[0].text,
+            "kombinace: fine-tuning pro „jazykový cit\" + RAG"
+        );
     }
 }

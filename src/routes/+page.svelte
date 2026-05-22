@@ -10,8 +10,10 @@
   import { analysisStore } from '$lib/stores/analysis.svelte';
   import { t, tf } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
+  import type { AnalyzeInput } from '$lib/types';
 
-  let inputText = $state('');
+  let questionText = $state('');
+  let answerText = $state('');
 
   function preflightError(): string | null {
     return analysisPreflightError({
@@ -26,7 +28,7 @@
     });
   }
 
-  async function handleAnalyze(text: string) {
+  async function handleAnalyze(input: AnalyzeInput) {
     const error = preflightError();
     if (error) {
       alert(error);
@@ -34,8 +36,9 @@
       return;
     }
 
-    inputText = text;
-    await analysisStore.run(text);
+    questionText = input.question ?? '';
+    answerText = input.answer;
+    await analysisStore.run(input);
   }
 
   onMount(() => {
@@ -45,7 +48,7 @@
     const unlisten = import('@tauri-apps/api/event').then(({ listen }) =>
       listen('capture-trigger', async () => {
         const clipboard = await readClipboardText();
-        if (clipboard) inputText = clipboard;
+        if (clipboard) answerText = clipboard;
       }),
     );
 
@@ -68,7 +71,7 @@
     </nav>
   </header>
 
-  <PasteInput bind:value={inputText} onAnalyze={handleAnalyze} />
+  <PasteInput bind:question={questionText} bind:answer={answerText} onAnalyze={handleAnalyze} />
 
   <section class="result">
     {#if analysisStore.status === 'running'}
