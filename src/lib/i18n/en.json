@@ -72,6 +72,7 @@
     "cli_preset_codex": "OpenAI Codex CLI",
     "cli_preset_ollama": "Ollama (Qwen2.5 Coder)",
     "cli_preset_custom": "Custom command",
+    "buy_me_coffee": "Buy me a coffee",
     "cli_command_label": "CLI command",
     "cli_command_placeholder": "claude -p",
     "cli_command_hint": "The command receives the prompt on stdin and must print JSON to stdout. Use a preset above or enter a custom command.",
