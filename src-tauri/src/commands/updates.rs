@@ -13,7 +13,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-pub const REPO_OWNER: &str = "lukasoplt";
+pub const REPO_OWNER: &str = "tsechis";
 pub const REPO_NAME: &str = "druhy-nazor";
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
