@@ -6,6 +6,7 @@
   import ClaimText from '$lib/components/ClaimText.svelte';
   import PasteInput from '$lib/components/PasteInput.svelte';
   import SidePanel from '$lib/components/SidePanel.svelte';
+  import UpdateBanner from '$lib/components/UpdateBanner.svelte';
   import { analysisPreflightError } from '$lib/preflight';
   import { analysisStore } from '$lib/stores/analysis.svelte';
   import { t, tf } from '$lib/stores/i18n.svelte';
@@ -70,6 +71,8 @@
       </button>
     </nav>
   </header>
+
+  <UpdateBanner />
 
   <PasteInput bind:question={questionText} bind:answer={answerText} onAnalyze={handleAnalyze} />
 

@@ -33,6 +33,12 @@ pub struct Settings {
     /// Parsed via `shlex::split`. Example: `"claude -p"`, `"ollama run llama3.2 --format json"`.
     #[serde(default = "default_cli_command")]
     pub cli_command: String,
+
+    /// When true, the app makes one GET request to the GitHub Releases API on
+    /// launch to discover newer published versions. No data is sent; the
+    /// fetched manifest is read locally. Default off.
+    #[serde(default)]
+    pub check_updates_on_launch: bool,
 }
 
 fn default_anthropic_model() -> String {
@@ -53,6 +59,7 @@ impl Default for Settings {
             provider: ProviderKind::Cli,
             anthropic_model: DEFAULT_ANTHROPIC_MODEL.to_string(),
             cli_command: DEFAULT_CLI_COMMAND.to_string(),
+            check_updates_on_launch: false,
         }
     }
 }

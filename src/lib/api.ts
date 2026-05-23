@@ -7,6 +7,7 @@ import {
   type Analysis,
   type ApiAccount,
   type Claim,
+  type LatestRelease,
   type Settings,
   type Verification,
 } from './types';
@@ -30,6 +31,7 @@ function browserDefaultSettings(): Settings {
     provider: 'cli',
     anthropic_model: DEFAULT_ANTHROPIC_MODEL,
     cli_command: DEFAULT_CLI_COMMAND,
+    check_updates_on_launch: false,
   };
 }
 
@@ -188,6 +190,23 @@ export async function openInBrowser(url: string): Promise<void> {
   }
 
   window.open(url, '_blank', 'noopener');
+}
+
+/**
+ * Opt-in check for newer GitHub Releases. Returns null when:
+ * - the app is running in browser preview (no Tauri runtime), or
+ * - the GitHub request fails for any reason (offline, rate limit, etc.).
+ *
+ * Never throws. The banner UX should treat null as "nothing to show".
+ */
+export async function checkLatestRelease(): Promise<LatestRelease | null> {
+  if (!isTauriRuntime()) return null;
+  try {
+    return await invoke<LatestRelease>('check_latest_release');
+  } catch (error) {
+    console.warn('check_latest_release failed', error);
+    return null;
+  }
 }
 
 function emitBrowserStarted(event: AnalysisStartedEvent): void {

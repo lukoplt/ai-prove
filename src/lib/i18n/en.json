@@ -93,8 +93,17 @@
     "locale_label": "Interface language",
     "hotkey_label": "Global hotkey",
     "cache_ttl_label": "Cache TTL (days)",
+    "updates_section": "Updates",
+    "check_updates_label": "Check for updates on launch",
+    "check_updates_hint": "When enabled, the app makes one GET request to GitHub on launch to see if a newer version exists. No data is sent and no download or install happens automatically.",
     "back": "Back",
     "saved": "Settings saved."
+  },
+  "updater": {
+    "available": "Version {version} is available",
+    "current": "Current: {version}",
+    "open_download": "Open download page",
+    "later": "Later"
   },
   "tray": {
     "show": "Open Druhý názor",

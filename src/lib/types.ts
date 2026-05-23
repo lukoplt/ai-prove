@@ -58,6 +58,16 @@ export interface Settings {
   provider: ProviderKind;
   anthropic_model: string;
   cli_command: string;
+  check_updates_on_launch: boolean;
+}
+
+export interface LatestRelease {
+  currentVersion: string;
+  latestVersion: string;
+  isNewer: boolean;
+  htmlUrl: string;
+  publishedAt: string;
+  body: string;
 }
 
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';

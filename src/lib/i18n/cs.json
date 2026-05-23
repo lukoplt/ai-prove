@@ -93,8 +93,17 @@
     "locale_label": "Jazyk rozhraní",
     "hotkey_label": "Globální klávesová zkratka",
     "cache_ttl_label": "Doba platnosti cache (dny)",
+    "updates_section": "Aktualizace",
+    "check_updates_label": "Hledat aktualizace při startu",
+    "check_updates_hint": "Při zapnutí appka při startu jednou pošle GET na GitHub API a zjistí, zda existuje novější verze. Žádná data se neodesílají a žádné stahování ani instalace neproběhne automaticky.",
     "back": "Zpět",
     "saved": "Nastavení uloženo."
+  },
+  "updater": {
+    "available": "K dispozici nová verze {version}",
+    "current": "Aktuální: {version}",
+    "open_download": "Otevřít stránku ke stažení",
+    "later": "Později"
   },
   "tray": {
     "show": "Otevřít Druhý názor",

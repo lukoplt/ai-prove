@@ -198,6 +198,15 @@
     </label>
   </section>
 
+  <section class="settings-grid">
+    <h2>{t('settings.updates_section')}</h2>
+    <label class="check">
+      <input type="checkbox" bind:checked={local.check_updates_on_launch} />
+      <span>{t('settings.check_updates_label')}</span>
+    </label>
+    <small class="hint">{t('settings.check_updates_hint')}</small>
+  </section>
+
   <footer>
     <div class="footer-status">
       {#if message}
@@ -351,6 +360,24 @@
   .msg {
     color: #166534;
     font-size: 13px;
+  }
+
+  .check {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .check input[type='checkbox'] {
+    width: auto;
+    margin: 0;
+  }
+
+  .hint {
+    color: #71717a;
+    font-size: 12px;
+    line-height: 1.45;
   }
 
   @media (max-width: 680px) {

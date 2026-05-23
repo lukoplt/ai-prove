@@ -15,6 +15,7 @@ const defaults: Settings = {
   provider: 'cli',
   anthropic_model: DEFAULT_ANTHROPIC_MODEL,
   cli_command: DEFAULT_CLI_COMMAND,
+  check_updates_on_launch: false,
 };
 
 let current = $state<Settings>(defaults);
