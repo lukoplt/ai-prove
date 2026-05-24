@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 pub const REPO_OWNER: &str = "lukoplt";
-pub const REPO_NAME: &str = "druhy-nazor";
+pub const REPO_NAME: &str = "ai-prove";
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]

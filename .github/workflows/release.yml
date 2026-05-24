@@ -56,7 +56,7 @@ jobs:
           tagName: ${{ env.RELEASE_TAG }}
           releaseName: 'PROVE ${{ env.RELEASE_TAG }}'
           releaseBody: |
-            See [CHANGELOG](https://github.com/lukoplt/druhy-nazor/blob/main/CHANGELOG.md) for details.
+            See [CHANGELOG](https://github.com/lukoplt/ai-prove/blob/main/CHANGELOG.md) for details.
 
             **Downloads:**
             - macOS: `.dmg` (universal, Apple Silicon + Intel)
