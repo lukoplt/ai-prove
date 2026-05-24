@@ -17,7 +17,7 @@ jobs:
         include:
           - platform: macos-latest
             args: --target universal-apple-darwin
-          - platform: windows-latest
+          - platform: windows-2025
             args: ''
     runs-on: ${{ matrix.platform }}
     env:
@@ -26,13 +26,11 @@ jobs:
       # off of any shell evaluation path.
       RELEASE_TAG: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
