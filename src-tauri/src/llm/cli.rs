@@ -511,8 +511,7 @@ mod tests {
         use std::fs;
         use std::os::unix::fs::PermissionsExt;
 
-        let root =
-            std::env::temp_dir().join(format!("druhy-nazor-cli-path-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("prove-cli-path-{}", std::process::id()));
         let home = root.join("home");
         let bin_dir = home.join(".local/bin");
         let program = bin_dir.join("claude");

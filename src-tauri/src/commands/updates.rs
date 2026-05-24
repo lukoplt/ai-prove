@@ -53,7 +53,7 @@ pub async fn check_latest_release() -> AppResult<LatestRelease> {
 async fn fetch_latest(url: &str) -> AppResult<LatestRelease> {
     let client = Client::builder()
         .timeout(Duration::from_secs(10))
-        .user_agent(concat!("druhy-nazor/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("prove/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|error| AppError::Other(format!("reqwest builder: {error}")))?;
 

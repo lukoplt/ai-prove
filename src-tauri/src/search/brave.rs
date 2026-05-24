@@ -17,7 +17,7 @@ impl BraveClient {
     pub fn new(api_key: String, locale: String) -> AppResult<Self> {
         let client = Client::builder()
             .timeout(Duration::from_secs(20))
-            .user_agent("druhy-nazor/0.1")
+            .user_agent(concat!("prove/", env!("CARGO_PKG_VERSION")))
             .build()
             .map_err(|error| AppError::Other(format!("reqwest builder: {error}")))?;
 

@@ -5,8 +5,8 @@ use tauri::{AppHandle, Manager, Runtime};
 
 pub fn install<R: Runtime>(app: &AppHandle<R>, locale: &str) -> AppResult<TrayIcon<R>> {
     let (show_label, quit_label) = match locale {
-        "cs" => ("Otevřít Druhý názor", "Ukončit"),
-        _ => ("Open Druhý názor", "Quit"),
+        "cs" => ("Otevřít PROVE", "Ukončit"),
+        _ => ("Open PROVE", "Quit"),
     };
     let show_item = MenuItem::with_id(app, "show", show_label, true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", quit_label, true, None::<&str>)?;

@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "Druhý názor",
-    "tagline": "A second opinion on AI responses"
+    "title": "PROVE",
+    "tagline": "Prompt · Response · Output · Verification · Engine"
   },
   "input": {
     "placeholder": "Paste an AI response here…",
@@ -106,7 +106,7 @@
     "later": "Later"
   },
   "tray": {
-    "show": "Open Druhý názor",
+    "show": "Open PROVE",
     "quit": "Quit"
   },
   "errors": {

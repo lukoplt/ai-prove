@@ -1,4 +1,6 @@
-# Druhý názor
+# PROVE
+
+**P**rompt · **R**esponse · **O**utput · **V**erification · **E**ngine
 
 Verification layer for AI responses. Desktop app for macOS and Windows.
 

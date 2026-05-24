@@ -12,7 +12,7 @@ import {
   type Verification,
 } from './types';
 
-const SETTINGS_STORAGE_KEY = 'druhy-nazor:settings';
+const SETTINGS_STORAGE_KEY = 'prove:settings';
 const browserStartedHandlers = new Set<(event: AnalysisStartedEvent) => void>();
 const browserClaimsHandlers = new Set<(event: AnalysisClaimsEvent) => void>();
 const browserVerifiedHandlers = new Set<(event: ClaimVerifiedEvent) => void>();
@@ -64,7 +64,7 @@ export async function setSettings(settings: Settings): Promise<void> {
 
 export async function setApiKey(account: ApiAccount, secret: string): Promise<void> {
   if (!isTauriRuntime()) {
-    sessionStorage.setItem(`druhy-nazor:key:${account}`, String(secret.trim().length > 0));
+    sessionStorage.setItem(`prove:key:${account}`, String(secret.trim().length > 0));
     return;
   }
 
@@ -73,7 +73,7 @@ export async function setApiKey(account: ApiAccount, secret: string): Promise<vo
 
 export async function clearApiKey(account: ApiAccount): Promise<void> {
   if (!isTauriRuntime()) {
-    sessionStorage.removeItem(`druhy-nazor:key:${account}`);
+    sessionStorage.removeItem(`prove:key:${account}`);
     return;
   }
 
@@ -81,7 +81,7 @@ export async function clearApiKey(account: ApiAccount): Promise<void> {
 }
 
 export async function hasApiKey(account: ApiAccount): Promise<boolean> {
-  if (!isTauriRuntime()) return sessionStorage.getItem(`druhy-nazor:key:${account}`) === 'true';
+  if (!isTauriRuntime()) return sessionStorage.getItem(`prove:key:${account}`) === 'true';
   return invoke<boolean>('has_api_key', { account });
 }
 

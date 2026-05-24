@@ -54,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ env.RELEASE_TAG }}
-          releaseName: 'Druhý názor ${{ env.RELEASE_TAG }}'
+          releaseName: 'PROVE ${{ env.RELEASE_TAG }}'
           releaseBody: |
             See [CHANGELOG](https://github.com/lukoplt/druhy-nazor/blob/main/CHANGELOG.md) for details.
 

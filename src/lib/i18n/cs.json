@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "Druhý názor",
-    "tagline": "Druhý názor na odpovědi AI"
+    "title": "PROVE",
+    "tagline": "Prompt · Response · Output · Verification · Engine"
   },
   "input": {
     "placeholder": "Vlož sem odpověď AI…",
@@ -106,7 +106,7 @@
     "later": "Později"
   },
   "tray": {
-    "show": "Otevřít Druhý názor",
+    "show": "Otevřít PROVE",
     "quit": "Ukončit"
   },
   "errors": {

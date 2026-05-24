@@ -1,7 +1,7 @@
 use crate::error::AppResult;
 use keyring::Entry;
 
-const SERVICE: &str = "cz.druhynazor.app";
+const SERVICE: &str = "app.prove.desktop";
 
 pub fn set_api_key(account: &str, secret: &str) -> AppResult<()> {
     let entry = Entry::new(SERVICE, account)?;
