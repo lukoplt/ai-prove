@@ -39,7 +39,7 @@ LLMs sound confident even when they're wrong. PROVE doesn't trust the model — 
 2. Open the DMG and drag **PROVE** into Applications.
 3. First launch: macOS Gatekeeper blocks unsigned apps. Right-click `PROVE.app` → **Open** → confirm. After the first run, normal launch works.
 
-> The current build is adhoc-signed (no Apple Developer ID). Production signing + notarization is on the roadmap — it's an independent step that's not tied to making the repo public.
+> The current build is adhoc-signed (no Apple Developer ID). Production signing + notarization is on the roadmap.
 
 ### Windows
 
