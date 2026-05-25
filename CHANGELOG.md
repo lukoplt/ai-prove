@@ -3,6 +3,10 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.3.0] — 2026-05-25
+
+First clean minor release. Folds in everything from the 0.2.x iteration cycle: the disclaimer footer, the locked viewport with internal-only scroll, the Brave Search fix for the Czech locale (`country=ALL`), and the explicit minimal macOS entitlements that stop the TCC prompts for Downloads / Desktop / Music. No behavioral changes versus 0.2.3 — this is the cut-over point where the project stops deleting prior releases.
+
 ## [0.2.3] — 2026-05-25
 
 ### Fixed
@@ -40,6 +44,7 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 The `v0.1.0` and `v0.1.1` tags from the rebrand cycle (formerly _Druhý názor_) were removed when PROVE was promoted to a clean 0.2 release. Nothing about their content is preserved here; the project history is intact on `main`.
 
+[0.3.0]: https://github.com/lukoplt/ai-prove/releases/tag/v0.3.0
 [0.2.3]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.3
 [0.2.2]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.2
 [0.2.1]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.1
