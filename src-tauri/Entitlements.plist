@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        PROVE explicitly opts INTO only what it needs:
+        - outbound HTTPS (Anthropic / Brave / GitHub / readability fetch)
+        - JIT for WebKit JS engine (Tauri WebView)
+        - Unsigned executable memory for the same reason
+
+        It does NOT request:
+        - app-sandbox (would block keychain + CLI subprocess)
+        - files.downloads / files.desktop / files.documents / files.music
+        - files.user-selected.read-write
+        - device.audio-input / camera / location / contacts / calendars
+        - network.server (the app does not listen on any port)
+
+        Hardened runtime stays on (-o runtime) so macOS Gatekeeper still
+        applies its normal protections.
+    -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+</dict>
+</plist>

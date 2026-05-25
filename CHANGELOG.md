@@ -3,6 +3,12 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.2.3] — 2026-05-25
+
+### Fixed
+
+- macOS 26: app no longer triggers TCC permission prompts for **Downloads**, **Desktop**, or **Music**. The bundle now ships with an explicit `Entitlements.plist` declaring only `network.client`, `cs.allow-jit`, and `cs.allow-unsigned-executable-memory` — no file-access entitlements at all. The main window also sets `dragDropEnabled: false`, which stops Tauri from registering the WebView as a native OS-level file-drop target (HTML-level drag & drop into the answer textarea keeps working because it uses WebView events, not native OS file drops).
+
 ## [0.2.2] — 2026-05-25
 
 ### Fixed
@@ -34,6 +40,7 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 The `v0.1.0` and `v0.1.1` tags from the rebrand cycle (formerly _Druhý názor_) were removed when PROVE was promoted to a clean 0.2 release. Nothing about their content is preserved here; the project history is intact on `main`.
 
+[0.2.3]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.3
 [0.2.2]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.2
 [0.2.1]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.1
 [0.2.0]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.0
