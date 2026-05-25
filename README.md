@@ -39,13 +39,18 @@ LLMs sound confident even when they're wrong. PROVE doesn't trust the model — 
 2. Open the DMG and drag **PROVE** into Applications.
 3. First launch: macOS Gatekeeper blocks unsigned apps. Right-click `PROVE.app` → **Open** → confirm. After the first run, normal launch works.
 
-> The current build is adhoc-signed (no Apple Developer ID). Production signing + notarization will land before public release.
+> The current build is adhoc-signed (no Apple Developer ID). Production signing + notarization is on the roadmap — it's an independent step that's not tied to making the repo public.
 
 ### Windows
 
 1. Download `PROVE_0.1.0_x64_en-US.msi` (or `PROVE_0.1.0_x64-setup.exe` for the NSIS variant) from the [latest Release](https://github.com/lukoplt/ai-prove/releases/latest).
-2. Double-click and follow the installer.
-3. SmartScreen will warn about an unrecognized publisher: click **More info → Run anyway**.
+2. **If Microsoft Defender / SmartScreen blocks or removes the download:**
+   - In Edge or Chrome, the download bar shows a warning. Click the **`…`** (or down-arrow) next to the file → **Keep** → confirm **Keep anyway** when Windows asks.
+   - If Defender SmartScreen already removed the file, open **Windows Security → Virus & threat protection → Protection history**, find the PROVE entry, click **Actions → Allow → Restore**. Then re-download or copy the restored file back to Downloads.
+   - To preempt the block: **Windows Security → Virus & threat protection → Manage settings → Add or remove exclusions → File** and add the downloaded installer.
+3. Double-click the installer and follow the wizard. SmartScreen may still warn about an unrecognized publisher — click **More info → Run anyway**.
+
+> Production code-signing (EV cert) is on the roadmap. Until then, the warnings above are expected on every clean Windows install.
 
 ---
 
