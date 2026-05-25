@@ -29,9 +29,13 @@ impl BraveClient {
     }
 
     fn country_and_lang(&self) -> (&'static str, &'static str) {
+        // Brave Search API has a fixed `country` enum that does NOT include CZ.
+        // For Czech locale we fall back to `ALL` (global) and rely on
+        // `search_lang=cs` to rank Czech-language sources. For English we use
+        // `US` which is supported and produces sensible defaults.
         match self.locale.as_str() {
-            "cs" => ("cz", "cs"),
-            _ => ("us", "en"),
+            "cs" => ("ALL", "cs"),
+            _ => ("US", "en"),
         }
     }
 }
