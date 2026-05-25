@@ -35,15 +35,18 @@ LLMs sound confident even when they're wrong. PROVE doesn't trust the model — 
 
 ### macOS
 
-1. Download `PROVE_0.1.0_universal.dmg` from the [latest Release](https://github.com/lukoplt/ai-prove/releases/latest).
+1. Download `PROVE_0.2.0_universal.dmg` from the [latest Release](https://github.com/lukoplt/ai-prove/releases/latest).
 2. Open the DMG and drag **PROVE** into Applications.
-3. First launch: macOS Gatekeeper blocks unsigned apps. Right-click `PROVE.app` → **Open** → confirm. After the first run, normal launch works.
+3. First launch: macOS Gatekeeper blocks unsigned apps.
+   - **macOS 26 and newer:** the "Open Anyway" action moved into **System Settings → Privacy & Security**. Try to open `PROVE.app` once (it gets blocked with a warning dialog), then go to System Settings → Privacy & Security, scroll to the **"PROVE.app was blocked…"** notice, and click **Open Anyway**. Confirm with Touch ID / password.
+   - **macOS 14 / 15:** right-click (or Ctrl-click) `PROVE.app` in Finder → **Open** → confirm.
+   - After the first allow, normal launch works.
 
 > The current build is adhoc-signed (no Apple Developer ID). Production signing + notarization is on the roadmap.
 
 ### Windows
 
-1. Download `PROVE_0.1.0_x64_en-US.msi` (or `PROVE_0.1.0_x64-setup.exe` for the NSIS variant) from the [latest Release](https://github.com/lukoplt/ai-prove/releases/latest).
+1. Download `PROVE_0.2.0_x64_en-US.msi` (or `PROVE_0.2.0_x64-setup.exe` for the NSIS variant) from the [latest Release](https://github.com/lukoplt/ai-prove/releases/latest).
 2. **If Microsoft Defender / SmartScreen blocks or removes the download:**
    - In Edge or Chrome, the download bar shows a warning. Click the **`…`** (or down-arrow) next to the file → **Keep** → confirm **Keep anyway** when Windows asks.
    - If Defender SmartScreen already removed the file, open **Windows Security → Virus & threat protection → Protection history**, find the PROVE entry, click **Actions → Allow → Restore**. Then re-download or copy the restored file back to Downloads.
