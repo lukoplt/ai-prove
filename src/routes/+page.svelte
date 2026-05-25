@@ -90,24 +90,36 @@
           {#if analysisStore.current.truncated}
             <p class="warning">{t('summary.truncated_warning')}</p>
           {/if}
-          <ClaimText
-            input={analysisStore.current.input}
-            claims={analysisStore.current.claims}
-            selectedId={analysisStore.selectedId}
-            onSelect={(id) => analysisStore.select(id)}
-          />
+          <div class="claim-scroll">
+            <ClaimText
+              input={analysisStore.current.input}
+              claims={analysisStore.current.claims}
+              selectedId={analysisStore.selectedId}
+              onSelect={(id) => analysisStore.select(id)}
+            />
+          </div>
         </div>
-        <SidePanel claim={analysisStore.selectedClaim} />
+        <div class="side-scroll">
+          <SidePanel claim={analysisStore.selectedClaim} />
+        </div>
       </div>
     {/if}
   </section>
+
+  <footer class="disclaimer">{t('footer.disclaimer')}</footer>
 </main>
 
 <style>
   .page {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100vh;
     max-width: 960px;
     margin: 0 auto;
-    padding: 28px;
+    padding: 24px 28px 16px;
+    overflow: hidden;
   }
 
   header {
@@ -115,7 +127,8 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 18px;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
+    flex: 0 0 auto;
   }
 
   h1 {
@@ -130,7 +143,11 @@
   }
 
   .result {
-    margin-top: 18px;
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+    margin-top: 14px;
+    overflow: hidden;
   }
 
   .status {
@@ -143,23 +160,44 @@
   }
 
   .grid {
+    flex: 1 1 auto;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
     gap: 16px;
+    min-height: 0;
+    width: 100%;
   }
 
   .left {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
+    min-height: 0;
     padding: 16px;
     border: 1px solid #e4e4e7;
     border-radius: 8px;
     background: #ffffff;
   }
 
+  .claim-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .side-scroll {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
   .meta {
     margin: 0 0 8px;
     color: #71717a;
     font-size: 13px;
+    flex: 0 0 auto;
   }
 
   .warning {
@@ -169,6 +207,18 @@
     background: #fef3c7;
     color: #92400e;
     font-size: 13px;
+    flex: 0 0 auto;
+  }
+
+  .disclaimer {
+    flex: 0 0 auto;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e4e4e7;
+    color: #71717a;
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
   }
 
   @media (max-width: 820px) {

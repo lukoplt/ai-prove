@@ -109,6 +109,9 @@
     "show": "Otevřít PROVE",
     "quit": "Ukončit"
   },
+  "footer": {
+    "disclaimer": "Ani PROVE neumí zaručit 100% správnost obsahu. Cílem aplikace je pomoci snížit šíření dezinformací — finální úsudek je vždy na tobě."
+  },
   "errors": {
     "key_empty": "Klíč nemůže být prázdný.",
     "invalid_settings": "Neplatná nastavení.",

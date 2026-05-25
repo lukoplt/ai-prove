@@ -109,6 +109,9 @@
     "show": "Open PROVE",
     "quit": "Quit"
   },
+  "footer": {
+    "disclaimer": "Even PROVE cannot guarantee 100% accuracy of the content. The app aims to help reduce the spread of misinformation — the final judgment is always yours."
+  },
   "errors": {
     "key_empty": "The key cannot be empty.",
     "invalid_settings": "Invalid settings.",

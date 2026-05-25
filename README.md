@@ -68,10 +68,10 @@ LLMs sound confident even when they're wrong. PROVE doesn't trust the model — 
 
 ## Supported LLM providers
 
-| Provider | How | Authentication | Cost |
-| --- | --- | --- | --- |
-| **Local CLI** | `claude -p`, `codex --print`, `ollama run …`, `aichat`, etc. | Whatever the CLI uses (already on your machine) | Zero — uses your existing setup |
-| **Anthropic API** | Direct HTTPS to `api.anthropic.com` | API key in OS keychain | Pay per token |
+| Provider          | How                                                          | Authentication                                  | Cost                            |
+| ----------------- | ------------------------------------------------------------ | ----------------------------------------------- | ------------------------------- |
+| **Local CLI**     | `claude -p`, `codex --print`, `ollama run …`, `aichat`, etc. | Whatever the CLI uses (already on your machine) | Zero — uses your existing setup |
+| **Anthropic API** | Direct HTTPS to `api.anthropic.com`                          | API key in OS keychain                          | Pay per token                   |
 
 Anything that can read a prompt from stdin and print one JSON object to stdout works as a CLI provider. The shell command is parsed via `shlex::split`, so quoting follows POSIX rules.
 
@@ -149,16 +149,16 @@ git tag v0.2.0 && git push origin v0.2.0                # auto-triggers on tag p
 
 ## Architecture
 
-| Layer | Tech |
-| --- | --- |
-| Shell | Tauri 2 |
-| Frontend | Svelte 5 + TypeScript + Vite |
-| Backend | Rust (tokio, reqwest, rusqlite, keyring) |
-| LLM | User-configured CLI subprocess OR Anthropic HTTPS API |
-| Search | Brave Search API (optional) |
-| Article extraction | Mozilla Readability (Rust port) |
-| Storage | SQLite (cache + history) + OS keychain (secrets) + tauri-plugin-store (prefs) |
-| i18n | Bilingual JSON bundles (cs, en), system-locale default |
+| Layer              | Tech                                                                          |
+| ------------------ | ----------------------------------------------------------------------------- |
+| Shell              | Tauri 2                                                                       |
+| Frontend           | Svelte 5 + TypeScript + Vite                                                  |
+| Backend            | Rust (tokio, reqwest, rusqlite, keyring)                                      |
+| LLM                | User-configured CLI subprocess OR Anthropic HTTPS API                         |
+| Search             | Brave Search API (optional)                                                   |
+| Article extraction | Mozilla Readability (Rust port)                                               |
+| Storage            | SQLite (cache + history) + OS keychain (secrets) + tauri-plugin-store (prefs) |
+| i18n               | Bilingual JSON bundles (cs, en), system-locale default                        |
 
 Code is organized so that adding a new LLM provider means implementing a single `LlmProvider` trait in Rust; adding a new language means dropping a JSON bundle into `src/lib/i18n/`.
 
@@ -179,7 +179,7 @@ Code is organized so that adding a new LLM provider means implementing a single 
 
 ## Support
 
-If PROVE saves you from believing one wrong AI answer, [buy me a coffee](https://buymeacoffee.com/lukasoplt). 
+If PROVE saves you from believing one wrong AI answer, [buy me a coffee](https://buymeacoffee.com/lukasoplt).
 
 ---
 

@@ -229,11 +229,15 @@
 
 <style>
   .page {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100vh;
     max-width: 760px;
     margin: 0 auto;
     padding: 28px;
     display: grid;
     gap: 16px;
+    overflow-y: auto;
   }
 
   header {
