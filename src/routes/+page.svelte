@@ -118,7 +118,7 @@
     height: 100vh;
     max-width: 960px;
     margin: 0 auto;
-    padding: 24px 28px 16px;
+    padding: 18px 24px 12px;
     overflow: hidden;
   }
 
@@ -127,7 +127,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 18px;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
     flex: 0 0 auto;
   }
 
@@ -146,7 +146,7 @@
     flex: 1 1 auto;
     display: flex;
     min-height: 0;
-    margin-top: 14px;
+    margin-top: 10px;
     overflow: hidden;
   }
 
@@ -212,12 +212,12 @@
 
   .disclaimer {
     flex: 0 0 auto;
-    margin-top: 12px;
-    padding-top: 10px;
+    margin-top: 8px;
+    padding-top: 8px;
     border-top: 1px solid #e4e4e7;
     color: #71717a;
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 11px;
+    line-height: 1.4;
     text-align: center;
   }
 

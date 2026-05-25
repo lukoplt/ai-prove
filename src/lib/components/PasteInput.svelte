@@ -131,7 +131,7 @@
   }
 
   label:last-of-type textarea {
-    min-height: 260px;
+    min-height: 200px;
   }
 
   .bar {

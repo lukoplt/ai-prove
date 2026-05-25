@@ -15,9 +15,9 @@
         "label": "main",
         "title": "PROVE",
         "width": 1100,
-        "height": 720,
+        "height": 860,
         "minWidth": 720,
-        "minHeight": 480,
+        "minHeight": 640,
         "resizable": true,
         "fullscreen": false,
         "decorations": true
