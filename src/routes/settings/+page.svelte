@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { clearApiKey, openInBrowser, setApiKey } from '$lib/api';
+  import { clearApiKey, setApiKey } from '$lib/api';
   import {
     CLI_PRESETS,
     commandToCliPreset,
@@ -61,19 +61,6 @@
 
   function syncCliPreset() {
     cliPreset = commandToCliPreset(local.cli_command);
-  }
-
-  const buyMeCoffeeUrl = 'https://buymeacoffee.com/lukasoplt';
-
-  async function openCoffee(event: MouseEvent) {
-    event.preventDefault();
-
-    if ('__TAURI_INTERNALS__' in window) {
-      await openInBrowser(buyMeCoffeeUrl);
-      return;
-    }
-
-    window.location.assign(buyMeCoffeeUrl);
   }
 </script>
 
@@ -215,9 +202,6 @@
     </div>
     <div class="settings-credit">
       <span>Made with <span class="heart">♥</span> by <span class="brand">Lukáš Oplt</span></span>
-      <a class="coffee" href={buyMeCoffeeUrl} target="_blank" rel="noreferrer" onclick={openCoffee}>
-        ☕ {t('settings.buy_me_coffee')}
-      </a>
     </div>
     <div class="footer-actions">
       <button type="button" class="primary" onclick={persistSettings} disabled={saving}>
@@ -331,22 +315,6 @@
   .brand {
     color: #3f3f46;
     font-weight: 700;
-  }
-
-  .coffee {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 26px;
-    padding: 3px 9px;
-    border-color: #18181b;
-    border: 1px solid #18181b;
-    border-radius: 6px;
-    background: #ffdd00;
-    color: #000000;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
   }
 
   .footer-actions {

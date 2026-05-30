@@ -3,6 +3,12 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.3.1] — 2026-05-30
+
+### Removed
+
+- Dropped the "Buy me a coffee" donation link from the settings footer and README, along with its i18n strings and styling.
+
 ## [0.3.0] — 2026-05-25
 
 First clean minor release. Folds in everything from the 0.2.x iteration cycle: the disclaimer footer, the locked viewport with internal-only scroll, the Brave Search fix for the Czech locale (`country=ALL`), and the explicit minimal macOS entitlements that stop the TCC prompts for Downloads / Desktop / Music. No behavioral changes versus 0.2.3 — this is the cut-over point where the project stops deleting prior releases.

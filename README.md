@@ -180,12 +180,6 @@ Code is organized so that adding a new LLM provider means implementing a single 
 
 ---
 
-## Support
-
-If PROVE saves you from believing one wrong AI answer, [buy me a coffee](https://buymeacoffee.com/lukasoplt).
-
----
-
 ## License
 
 Apache-2.0. See [LICENSE](./LICENSE).
