@@ -17,6 +17,7 @@
 </script>
 
 {#if settings.loaded}
+  <div class="app-mesh" aria-hidden="true"></div>
   {@render children()}
 {:else}
   <div class="boot">{bootLabel}</div>

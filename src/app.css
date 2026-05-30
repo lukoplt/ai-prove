@@ -1,5 +1,7 @@
+@import '$lib/styles/tokens.css';
+
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   font-family:
     Inter,
     ui-sans-serif,
@@ -8,8 +10,8 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  background: #f7f7f5;
-  color: #18181b;
+  background: var(--bg);
+  color: var(--text);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -25,6 +27,8 @@ body {
   height: 100vh;
   margin: 0;
   overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
 }
 
 button,
@@ -35,39 +39,62 @@ textarea {
 }
 
 button {
-  border: 1px solid #d4d4d8;
-  border-radius: 6px;
-  padding: 7px 12px;
-  background: #ffffff;
-  color: #18181b;
+  border: 1px solid var(--surface-glass-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-glass-strong);
+  color: var(--text);
   cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:active {
+  transform: translateY(1px);
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 input,
 select,
 textarea {
-  border: 1px solid #d4d4d8;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #18181b;
+  border: 1px solid var(--surface-glass-border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text);
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
 }
 
 input,
 select {
   min-height: 38px;
-  padding: 7px 10px;
+  padding: var(--space-2) var(--space-3);
 }
 
 textarea {
   line-height: 1.5;
 }
 
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
+}
+
 :focus-visible {
-  outline: 3px solid #93c5fd;
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }

@@ -1,0 +1,114 @@
+/* Design tokens — single source of truth. Light in :root, dark overrides under [data-theme="dark"]. */
+:root {
+  /* color */
+  --bg: #eef0f4;
+  --bg-elevated: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.62);
+  --surface-glass-strong: rgba(255, 255, 255, 0.82);
+  --surface-glass-border: rgba(17, 17, 26, 0.08);
+  --text: #18181b;
+  --text-muted: #52525b;
+  --text-subtle: #8b8b94;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.12);
+  --accent-contrast: #ffffff;
+  --focus-ring: rgba(99, 102, 241, 0.55);
+
+  /* status */
+  --ok: #15803d;
+  --ok-soft: rgba(34, 197, 94, 0.16);
+  --bad: #b91c1c;
+  --bad-soft: rgba(239, 68, 68, 0.15);
+  --warn: #b45309;
+  --warn-soft: rgba(234, 179, 8, 0.18);
+  --neutral: #52525b;
+  --neutral-soft: rgba(113, 113, 122, 0.14);
+
+  /* tier */
+  --tier-a-bg: #dbeafe; --tier-a-fg: #1e3a8a;
+  --tier-b-bg: #e0e7ff; --tier-b-fg: #3730a3;
+  --tier-c-bg: #eef0f4; --tier-c-fg: #374151;
+  --tier-d-bg: #fee2e2; --tier-d-fg: #7f1d1d;
+
+  /* glass */
+  --glass-blur: 20px;
+  --glass-sat: 180%;
+
+  /* geometry */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-7: 32px; --space-8: 40px;
+  --radius-sm: 10px; --radius-md: 14px; --radius-lg: 18px; --radius-xl: 24px;
+  --shadow-sm: 0 1px 2px rgba(17, 17, 26, 0.06), 0 2px 8px rgba(17, 17, 26, 0.05);
+  --shadow-md: 0 4px 16px rgba(17, 17, 26, 0.10);
+  --shadow-lg: 0 12px 40px rgba(17, 17, 26, 0.16);
+
+  /* motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur: 200ms;
+
+  /* mesh background blobs */
+  --mesh-1: rgba(99, 102, 241, 0.18);
+  --mesh-2: rgba(56, 189, 248, 0.16);
+  --mesh-3: rgba(168, 85, 247, 0.14);
+}
+
+[data-theme='dark'] {
+  --bg: #0b0c10;
+  --bg-elevated: #16171d;
+  --surface-glass: rgba(30, 31, 40, 0.55);
+  --surface-glass-strong: rgba(30, 31, 40, 0.78);
+  --surface-glass-border: rgba(255, 255, 255, 0.10);
+  --text: #f3f4f6;
+  --text-muted: #b4b7c0;
+  --text-subtle: #8a8d97;
+  --accent: #818cf8;
+  --accent-hover: #a5b4fc;
+  --accent-soft: rgba(129, 140, 248, 0.20);
+  --accent-contrast: #0b0c10;
+  --focus-ring: rgba(129, 140, 248, 0.6);
+
+  --ok: #4ade80;  --ok-soft: rgba(34, 197, 94, 0.20);
+  --bad: #f87171;  --bad-soft: rgba(239, 68, 68, 0.22);
+  --warn: #fbbf24; --warn-soft: rgba(234, 179, 8, 0.22);
+  --neutral: #a1a1aa; --neutral-soft: rgba(161, 161, 170, 0.16);
+
+  --tier-a-bg: rgba(59, 130, 246, 0.22); --tier-a-fg: #bfdbfe;
+  --tier-b-bg: rgba(99, 102, 241, 0.22); --tier-b-fg: #c7d2fe;
+  --tier-c-bg: rgba(148, 163, 184, 0.18); --tier-c-fg: #d1d5db;
+  --tier-d-bg: rgba(239, 68, 68, 0.22); --tier-d-fg: #fecaca;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+  --mesh-1: rgba(79, 70, 229, 0.26);
+  --mesh-2: rgba(14, 116, 144, 0.24);
+  --mesh-3: rgba(126, 34, 206, 0.22);
+}
+
+/* shared glass surface */
+.glass {
+  background: var(--surface-glass);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border: 1px solid var(--surface-glass-border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* app mesh background — fixed, sits behind everything */
+.app-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 50% at 12% 8%, var(--mesh-1), transparent 60%),
+    radial-gradient(55% 45% at 88% 12%, var(--mesh-2), transparent 60%),
+    radial-gradient(50% 50% at 50% 100%, var(--mesh-3), transparent 60%),
+    var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
