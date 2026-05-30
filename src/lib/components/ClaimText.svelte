@@ -65,36 +65,43 @@
 <style>
   .ct {
     margin: 0;
-    line-height: 1.7;
+    line-height: 1.75;
     font-size: 15px;
     white-space: pre-wrap;
+    color: var(--text);
   }
 
   .claim {
-    border-radius: 3px;
-    padding: 1px 2px;
+    border-radius: var(--radius-sm);
+    padding: 1px 3px;
     cursor: pointer;
     outline: 2px solid transparent;
-    transition: outline-color 120ms ease;
+    transition:
+      outline-color var(--dur-fast) var(--ease),
+      background var(--dur-fast) var(--ease);
+  }
+
+  .claim:hover {
+    background: var(--accent-soft);
   }
 
   .claim.selected {
-    outline-color: #18181b;
+    outline-color: var(--accent);
   }
 
   .kind-fact {
-    background: rgba(34, 197, 94, 0.18);
+    background: var(--ok-soft);
   }
 
   .kind-inference {
-    background: rgba(234, 179, 8, 0.18);
+    background: var(--warn-soft);
   }
 
   .kind-opinion {
-    background: rgba(249, 115, 22, 0.22);
+    background: var(--neutral-soft);
   }
 
   .kind-contradiction {
-    background: rgba(239, 68, 68, 0.22);
+    background: var(--bad-soft);
   }
 </style>
