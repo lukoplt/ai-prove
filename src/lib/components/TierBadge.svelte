@@ -10,30 +10,30 @@
 <style>
   .badge {
     display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
   }
 
   .tier-a {
-    background: #dbeafe;
-    color: #1e3a8a;
+    background: var(--tier-a-bg);
+    color: var(--tier-a-fg);
   }
 
   .tier-b {
-    background: #e0e7ff;
-    color: #3730a3;
+    background: var(--tier-b-bg);
+    color: var(--tier-b-fg);
   }
 
   .tier-c {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--tier-c-bg);
+    color: var(--tier-c-fg);
   }
 
   .tier-d {
-    background: #fee2e2;
-    color: #7f1d1d;
+    background: var(--tier-d-bg);
+    color: var(--tier-d-fg);
   }
 </style>

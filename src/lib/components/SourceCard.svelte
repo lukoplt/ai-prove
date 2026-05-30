@@ -19,7 +19,7 @@
   }
 </script>
 
-<article class="card stance-{source.stance}">
+<article class="card glass stance-{source.stance}">
   <header>
     <TierBadge tier={source.tier} />
     <span class="stance-pill">{t(`stance.${source.stance}`)}</span>
@@ -34,38 +34,36 @@
 
 <style>
   .card {
-    margin-bottom: 8px;
-    padding: 10px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    background: #ffffff;
+    margin-bottom: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
   }
 
   .stance-supports {
-    border-left: 3px solid #22c55e;
+    border-left: 3px solid var(--ok);
   }
 
   .stance-contradicts {
-    border-left: 3px solid #ef4444;
+    border-left: 3px solid var(--bad);
   }
 
   .stance-mentions {
-    border-left: 3px solid #9ca3af;
+    border-left: 3px solid var(--neutral);
   }
 
   header {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
   }
 
   .stance-pill {
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: #f3f4f6;
-    color: #374151;
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+    background: var(--neutral-soft);
+    color: var(--text-muted);
     font-size: 11px;
     font-weight: 600;
   }
@@ -73,32 +71,36 @@
   .host {
     min-width: 0;
     margin-left: auto;
-    color: #6b7280;
+    color: var(--text-subtle);
     font-size: 11px;
     overflow-wrap: anywhere;
   }
 
   h4 {
-    margin: 0 0 4px;
-    color: #111827;
+    margin: 0 0 var(--space-1);
+    color: var(--text);
     font-size: 13px;
-    line-height: 1.25;
+    line-height: 1.3;
   }
 
   .snippet {
-    margin: 0 0 7px;
-    color: #4b5563;
+    margin: 0 0 var(--space-2);
+    color: var(--text-muted);
     font-size: 12px;
-    line-height: 1.35;
+    line-height: 1.4;
   }
 
   button {
     padding: 0;
     border: 0;
     background: none;
-    color: #2563eb;
+    color: var(--accent);
     cursor: pointer;
     font-size: 12px;
     font-weight: 700;
+  }
+  button:hover {
+    color: var(--accent-hover);
+    border-color: transparent;
   }
 </style>
