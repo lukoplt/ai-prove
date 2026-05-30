@@ -50,6 +50,8 @@ export interface AnalyzeInput {
 
 export type ProviderKind = 'cli' | 'anthropic';
 
+export type ThemePref = 'auto' | 'light' | 'dark';
+
 export interface Settings {
   locale: 'cs' | 'en';
   hotkey: string;
@@ -59,6 +61,7 @@ export interface Settings {
   anthropic_model: string;
   cli_command: string;
   check_updates_on_launch: boolean;
+  theme: ThemePref;
 }
 
 export interface LatestRelease {

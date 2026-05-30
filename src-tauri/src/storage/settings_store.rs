@@ -15,6 +15,15 @@ pub enum ProviderKind {
     Anthropic,
 }
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ThemePref {
+    #[default]
+    Auto,
+    Light,
+    Dark,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Settings {
     pub locale: String,
@@ -39,6 +48,10 @@ pub struct Settings {
     /// fetched manifest is read locally. Default off.
     #[serde(default)]
     pub check_updates_on_launch: bool,
+
+    /// UI theme preference. `Auto` follows the OS color scheme.
+    #[serde(default)]
+    pub theme: ThemePref,
 }
 
 fn default_anthropic_model() -> String {
@@ -60,6 +73,7 @@ impl Default for Settings {
             anthropic_model: DEFAULT_ANTHROPIC_MODEL.to_string(),
             cli_command: DEFAULT_CLI_COMMAND.to_string(),
             check_updates_on_launch: false,
+            theme: ThemePref::Auto,
         }
     }
 }
@@ -226,6 +240,34 @@ mod tests {
         assert_eq!(parsed.provider, ProviderKind::Cli);
         assert_eq!(parsed.cli_command, DEFAULT_CLI_COMMAND);
         assert_eq!(parsed.anthropic_model, DEFAULT_ANTHROPIC_MODEL);
+    }
+
+    #[test]
+    fn default_theme_is_auto() {
+        assert_eq!(Settings::default().theme, ThemePref::Auto);
+    }
+
+    #[test]
+    fn legacy_settings_without_theme_deserializes_to_auto() {
+        let legacy = r#"{
+            "locale": "cs",
+            "hotkey": "CommandOrControl+Shift+D",
+            "cache_ttl_days": 7,
+            "onboarded": false
+        }"#;
+        let parsed: Settings = serde_json::from_str(legacy).unwrap();
+        assert_eq!(parsed.theme, ThemePref::Auto);
+    }
+
+    #[test]
+    fn theme_roundtrips_json() {
+        let settings = Settings {
+            theme: ThemePref::Dark,
+            ..Settings::default()
+        };
+        let json = serde_json::to_string(&settings).unwrap();
+        let back: Settings = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.theme, ThemePref::Dark);
     }
 
     #[test]

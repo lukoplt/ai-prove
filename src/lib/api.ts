@@ -32,6 +32,7 @@ function browserDefaultSettings(): Settings {
     anthropic_model: DEFAULT_ANTHROPIC_MODEL,
     cli_command: DEFAULT_CLI_COMMAND,
     check_updates_on_launch: false,
+    theme: 'auto',
   };
 }
 

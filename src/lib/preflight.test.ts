@@ -11,6 +11,7 @@ const cliSettings: Settings = {
   anthropic_model: 'claude-haiku-4-5-20251001',
   cli_command: 'claude -p',
   check_updates_on_launch: false,
+  theme: 'auto',
 };
 
 const messages = {
