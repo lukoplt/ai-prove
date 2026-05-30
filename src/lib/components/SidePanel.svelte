@@ -14,9 +14,12 @@
   }
 </script>
 
-<aside class="sp">
+<aside class="sp glass">
   {#if !claim}
-    <p class="empty">{t('sidepanel.empty')}</p>
+    <div class="empty">
+      <span class="empty-icon" aria-hidden="true">◎</span>
+      <p>{t('sidepanel.empty')}</p>
+    </div>
   {:else}
     <header>
       <span class="badge kind-{claim.kind}">{kindLabel(claim.kind)}</span>
@@ -52,25 +55,35 @@
 <style>
   .sp {
     min-height: 320px;
-    padding: 16px;
-    border: 1px solid #e4e4e7;
-    border-radius: 8px;
-    background: #ffffff;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
   }
 
   .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-3);
+    text-align: center;
+  }
+  .empty-icon {
+    font-size: 28px;
+    color: var(--text-subtle);
+  }
+  .empty p {
     margin: 0;
-    color: #71717a;
+    color: var(--text-subtle);
     font-size: 14px;
   }
 
   header {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
   }
 
   .badge {
     display: inline-block;
-    padding: 3px 8px;
+    padding: 3px var(--space-2);
     border-radius: 999px;
     font-size: 12px;
     font-weight: 700;
@@ -78,76 +91,78 @@
   }
 
   .kind-fact {
-    background: rgba(34, 197, 94, 0.22);
-    color: #14532d;
+    background: var(--ok-soft);
+    color: var(--ok);
   }
 
   .kind-inference {
-    background: rgba(234, 179, 8, 0.25);
-    color: #713f12;
+    background: var(--warn-soft);
+    color: var(--warn);
   }
 
   .kind-opinion {
-    background: rgba(249, 115, 22, 0.25);
-    color: #7c2d12;
+    background: var(--neutral-soft);
+    color: var(--neutral);
   }
 
   .kind-contradiction {
-    background: rgba(239, 68, 68, 0.25);
-    color: #7f1d1d;
+    background: var(--bad-soft);
+    color: var(--bad);
   }
 
   .quote {
-    margin: 0 0 12px;
-    padding: 8px 12px;
-    border-left: 3px solid #d4d4d8;
-    background: #fafafa;
+    margin: 0 0 var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-left: 3px solid var(--surface-glass-border);
+    background: var(--accent-soft);
+    border-radius: var(--radius-sm);
     font-size: 14px;
   }
 
   section h3 {
-    margin: 0 0 4px;
-    color: #71717a;
+    margin: 0 0 var(--space-1);
+    color: var(--text-subtle);
     font-size: 12px;
     text-transform: uppercase;
   }
 
   section p {
-    margin: 0 0 12px;
+    margin: 0 0 var(--space-3);
     font-size: 14px;
+    color: var(--text);
   }
 
   .muted {
-    color: #a1a1aa;
+    color: var(--text-subtle);
     font-style: italic;
   }
 
   .verdict {
-    margin: 0 0 10px;
-    padding: 8px 10px;
-    border-radius: 6px;
+    margin: 0 0 var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
     font-size: 13px;
-    line-height: 1.35;
+    line-height: 1.4;
   }
 
   .status-supported {
-    background: rgba(34, 197, 94, 0.15);
-    color: #14532d;
+    background: var(--ok-soft);
+    color: var(--ok);
   }
 
   .status-contradicted {
-    background: rgba(239, 68, 68, 0.15);
-    color: #7f1d1d;
+    background: var(--bad-soft);
+    color: var(--bad);
   }
 
   .status-no_consensus {
-    background: rgba(234, 179, 8, 0.18);
-    color: #713f12;
+    background: var(--warn-soft);
+    color: var(--warn);
   }
 
   .status-not_found,
   .status-not_verified {
-    background: #f3f4f6;
-    color: #4b5563;
+    background: var(--neutral-soft);
+    color: var(--text-muted);
   }
 </style>
