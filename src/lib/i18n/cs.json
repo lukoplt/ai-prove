@@ -16,6 +16,7 @@
   },
   "summary": {
     "analyzing": "Analyzuji…",
+    "loading_hint": "Ověřuji tvrzení proti zdrojům…",
     "claims_count": "{count} tvrzení",
     "truncated_warning": "Vstup byl zkrácen na prvních 25 tvrzení.",
     "error_prefix": "Chyba: {msg}",
@@ -61,6 +62,19 @@
     "pending": "Ověřuji…",
     "skipped_kind": "Tento typ tvrzení neověřujeme.",
     "no_sources": "Žádné zdroje."
+  },
+  "verdict": {
+    "mostly_verified": "Převážně ověřeno",
+    "disputed": "Sporné",
+    "no_consensus": "Bez konsenzu",
+    "unverified": "Neověřeno",
+    "count": "Ověřeno {verified} z {total} tvrzení"
+  },
+  "theme": {
+    "label": "Motiv",
+    "auto": "Auto",
+    "light": "Světlý",
+    "dark": "Tmavý"
   },
   "settings": {
     "title": "Nastavení",

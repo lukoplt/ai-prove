@@ -16,6 +16,7 @@
   },
   "summary": {
     "analyzing": "Analyzing…",
+    "loading_hint": "Checking claims against sources…",
     "claims_count": "{count} claims",
     "truncated_warning": "Input was truncated to the first 25 claims.",
     "error_prefix": "Error: {msg}",
@@ -61,6 +62,19 @@
     "pending": "Verifying…",
     "skipped_kind": "We don't verify this kind of claim.",
     "no_sources": "No sources."
+  },
+  "verdict": {
+    "mostly_verified": "Mostly verified",
+    "disputed": "Disputed",
+    "no_consensus": "No consensus",
+    "unverified": "Unverified",
+    "count": "{verified} of {total} claims verified"
+  },
+  "theme": {
+    "label": "Theme",
+    "auto": "Auto",
+    "light": "Light",
+    "dark": "Dark"
   },
   "settings": {
     "title": "Settings",
