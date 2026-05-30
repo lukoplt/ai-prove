@@ -21,7 +21,7 @@
 </script>
 
 {#if release && !dismissed}
-  <aside class="banner" role="status">
+  <aside class="banner glass" role="status">
     <div class="msg">
       <strong>{tf('updater.available', { version: release.latestVersion })}</strong>
       <span class="cur">{tf('updater.current', { version: release.currentVersion })}</span>
@@ -42,13 +42,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin: 0 0 14px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid #bfdbfe;
-    background: #eff6ff;
-    color: #1e3a8a;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    border-color: var(--accent);
+    color: var(--text);
     font-size: 14px;
   }
 
@@ -60,27 +59,28 @@
   }
 
   .cur {
-    color: #475569;
+    color: var(--text-muted);
     font-size: 12px;
   }
 
   .actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
     flex-shrink: 0;
   }
 
   .primary {
-    background: #2563eb;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border: 1px solid var(--accent);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
     cursor: pointer;
   }
 
   .primary:hover {
-    background: #1d4ed8;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
   }
 
   @media (max-width: 600px) {
