@@ -8,6 +8,7 @@
     presetCommand,
     type CliPresetId,
   } from '$lib/cliPresets';
+  import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   import { setLocale } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
   import { t } from '$lib/stores/i18n.svelte';
@@ -65,13 +66,18 @@
 </script>
 
 <main class="page">
-  <header>
+  <header class="glass">
     <button type="button" onclick={() => goto(resolve('/'))}>{t('settings.back')}</button>
     <h1>{t('settings.title')}</h1>
   </header>
 
+  <section class="glass">
+    <h2>{t('theme.label')}</h2>
+    <ThemeToggle />
+  </section>
+
   {#if local.provider === 'anthropic'}
-    <section>
+    <section class="glass">
       <h2>{t('settings.anthropic_key_label')}</h2>
       <p class="status">
         {settings.anthropicPresent ? t('settings.key_present') : t('settings.key_missing')}
@@ -97,7 +103,7 @@
     </section>
   {/if}
 
-  <section>
+  <section class="glass">
     <h2>{t('settings.brave_key_label')}</h2>
     <p class="status">
       {settings.bravePresent ? t('settings.key_present') : t('settings.brave_key_missing_optional')}
@@ -123,7 +129,7 @@
     <small class="hint">{t('settings.brave_key_hint')}</small>
   </section>
 
-  <section class="settings-grid">
+  <section class="settings-grid glass">
     <h2>{t('settings.provider_section')}</h2>
     <label>
       <span>{t('settings.provider_label')}</span>
@@ -167,7 +173,7 @@
     {/if}
   </section>
 
-  <section class="settings-grid">
+  <section class="settings-grid glass">
     <label>
       <span>{t('settings.locale_label')}</span>
       <select bind:value={local.locale}>
@@ -185,7 +191,7 @@
     </label>
   </section>
 
-  <section class="settings-grid">
+  <section class="settings-grid glass">
     <h2>{t('settings.updates_section')}</h2>
     <label class="check">
       <input type="checkbox" bind:checked={local.check_updates_on_launch} />
@@ -194,7 +200,7 @@
     <small class="hint">{t('settings.check_updates_hint')}</small>
   </section>
 
-  <footer>
+  <footer class="glass">
     <div class="footer-status">
       {#if message}
         <span class="msg">{message}</span>
@@ -218,33 +224,34 @@
     height: 100vh;
     max-width: 760px;
     margin: 0 auto;
-    padding: 28px;
+    padding: var(--space-6);
     display: grid;
-    gap: 16px;
+    gap: var(--space-4);
     overflow-y: auto;
   }
 
   header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
   }
 
   h1 {
     margin: 0;
-    font-size: 26px;
+    font-size: 22px;
+    letter-spacing: -0.01em;
   }
 
   section {
-    padding: 16px;
-    border: 1px solid #e4e4e7;
-    border-radius: 8px;
-    background: #ffffff;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
   }
 
   h2 {
-    margin: 0 0 8px;
-    color: #71717a;
+    margin: 0 0 var(--space-2);
+    color: var(--text-subtle);
     font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
@@ -252,7 +259,7 @@
 
   .row {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .row input {
@@ -261,23 +268,23 @@
   }
 
   .status {
-    margin: 0 0 10px;
-    color: #71717a;
+    margin: 0 0 var(--space-3);
+    color: var(--text-muted);
     font-size: 13px;
   }
 
   .settings-grid {
     display: grid;
-    gap: 12px;
+    gap: var(--space-3);
   }
 
   label {
     display: grid;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   label span {
-    color: #52525b;
+    color: var(--text-muted);
     font-size: 13px;
     font-weight: 600;
   }
@@ -286,7 +293,9 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    gap: 16px;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
   }
 
   .footer-status {
@@ -298,9 +307,9 @@
     grid-column: 2;
     align-items: center;
     justify-self: center;
-    gap: 12px;
+    gap: var(--space-3);
     min-width: 0;
-    color: #71717a;
+    color: var(--text-muted);
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
@@ -313,7 +322,7 @@
   }
 
   .brand {
-    color: #3f3f46;
+    color: var(--text);
     font-weight: 700;
   }
 
@@ -324,13 +333,17 @@
   }
 
   .primary {
-    border-color: #18181b;
-    background: #18181b;
-    color: #ffffff;
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
   }
 
   .msg {
-    color: #166534;
+    color: var(--ok);
     font-size: 13px;
   }
 
@@ -347,7 +360,7 @@
   }
 
   .hint {
-    color: #71717a;
+    color: var(--text-subtle);
     font-size: 12px;
     line-height: 1.45;
   }
