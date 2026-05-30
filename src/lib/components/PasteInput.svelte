@@ -101,32 +101,35 @@
 <style>
   .wrap {
     display: grid;
-    gap: 10px;
-    padding: 4px;
-    border: 2px dashed transparent;
-    border-radius: 8px;
-    transition: border-color 120ms ease;
+    gap: var(--space-3);
+    padding: var(--space-1);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    transition:
+      border-color var(--dur) var(--ease),
+      box-shadow var(--dur) var(--ease);
   }
 
   label {
     display: grid;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   span {
-    color: #52525b;
+    color: var(--text-muted);
     font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0;
   }
 
   .wrap.dragging {
-    border-color: #2563eb;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
   }
 
   textarea {
     width: 100%;
-    padding: 14px;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
     resize: vertical;
   }
 
@@ -137,7 +140,7 @@
   .bar {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-2);
     align-items: center;
   }
 
@@ -146,8 +149,12 @@
   }
 
   .primary {
-    border-color: #18181b;
-    background: #18181b;
-    color: #ffffff;
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
   }
 </style>
