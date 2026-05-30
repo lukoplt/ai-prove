@@ -3,6 +3,12 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.4.1] — 2026-05-31
+
+### Changed
+
+- New app icon: glass squircle with an indigo-to-violet gradient and a speech bubble + checkmark mark, evoking a verified second opinion. Regenerated all macOS/Windows icon assets from a single SVG source (`src-tauri/app-icon.svg`).
+
 ## [0.4.0] — 2026-05-30
 
 ### Changed
