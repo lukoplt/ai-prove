@@ -3,6 +3,18 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-05-30
+
+### Changed
+
+- New Apple-style glass UI: translucent panels over a gradient-mesh background, driven by a central CSS design-token system (no new dependencies).
+
+### Added
+
+- Light/dark theming that follows the OS by default, with an Auto/Light/Dark toggle persisted in settings (new `theme` setting).
+- Results verdict banner that summarizes claim verification (Mostly verified / Disputed / No consensus / Unverified) with a verified-count.
+- Improved loading and empty states.
+
 ## [0.3.1] — 2026-05-30
 
 ### Removed
