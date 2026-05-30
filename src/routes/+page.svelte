@@ -6,7 +6,9 @@
   import ClaimText from '$lib/components/ClaimText.svelte';
   import PasteInput from '$lib/components/PasteInput.svelte';
   import SidePanel from '$lib/components/SidePanel.svelte';
+  import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   import UpdateBanner from '$lib/components/UpdateBanner.svelte';
+  import VerdictBanner from '$lib/components/VerdictBanner.svelte';
   import { analysisPreflightError } from '$lib/preflight';
   import { analysisStore } from '$lib/stores/analysis.svelte';
   import { t, tf } from '$lib/stores/i18n.svelte';
@@ -60,12 +62,13 @@
 </script>
 
 <main class="page">
-  <header>
-    <div>
+  <header class="topbar glass">
+    <div class="brand">
       <h1>{t('app.title')}</h1>
       <p>{t('app.tagline')}</p>
     </div>
     <nav>
+      <ThemeToggle />
       <button type="button" onclick={() => goto(resolve('/settings'))}>
         {t('common.settings')}
       </button>
@@ -78,12 +81,21 @@
 
   <section class="result">
     {#if analysisStore.status === 'running'}
-      <p class="status">{t('summary.analyzing')}</p>
+      <div class="loading glass">
+        <span class="spinner" aria-hidden="true"></span>
+        <div>
+          <p class="status">{t('summary.analyzing')}</p>
+          <p class="hint">{t('summary.loading_hint')}</p>
+        </div>
+      </div>
     {:else if analysisStore.status === 'error'}
-      <p class="status error">{tf('summary.error_prefix', { msg: analysisStore.error ?? '?' })}</p>
+      <p class="status error glass">
+        {tf('summary.error_prefix', { msg: analysisStore.error ?? '?' })}
+      </p>
     {:else if analysisStore.status === 'done' && analysisStore.current}
       <div class="grid">
-        <div class="left">
+        <div class="left glass">
+          <VerdictBanner claims={analysisStore.current.claims} />
           <p class="meta">
             {tf('summary.claims_count', { count: analysisStore.current.claims.length })}
           </p>
@@ -116,54 +128,91 @@
     box-sizing: border-box;
     width: 100%;
     height: 100vh;
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
-    padding: 18px 24px 12px;
+    padding: var(--space-4) var(--space-6) var(--space-3);
     overflow: hidden;
   }
 
-  header {
+  .topbar {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 18px;
-    margin-bottom: 10px;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
     flex: 0 0 auto;
   }
 
-  h1 {
-    margin: 0 0 5px;
-    font-size: 28px;
-    line-height: 1.1;
-  }
-
-  p {
+  .brand h1 {
     margin: 0;
-    color: #71717a;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .brand p {
+    margin: 2px 0 0;
+    color: var(--text-subtle);
+    font-size: 13px;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .result {
     flex: 1 1 auto;
     display: flex;
     min-height: 0;
-    margin-top: 10px;
+    margin-top: var(--space-3);
     overflow: hidden;
   }
 
-  .status {
-    color: #71717a;
-    font-size: 14px;
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+  }
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--accent-soft);
+    border-top-color: var(--accent);
+    border-radius: 999px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
+  .status {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .hint {
+    margin: 2px 0 0;
+    color: var(--text-subtle);
+    font-size: 13px;
+  }
   .status.error {
-    color: #b91c1c;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    border-color: var(--bad);
+    color: var(--bad);
   }
 
   .grid {
     flex: 1 1 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--space-4);
     min-height: 0;
     width: 100%;
   }
@@ -173,17 +222,15 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-    padding: 16px;
-    border: 1px solid #e4e4e7;
-    border-radius: 8px;
-    background: #ffffff;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
   }
 
   .claim-scroll {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
-    padding-right: 4px;
+    padding-right: var(--space-1);
   }
 
   .side-scroll {
@@ -194,28 +241,28 @@
   }
 
   .meta {
-    margin: 0 0 8px;
-    color: #71717a;
+    margin: 0 0 var(--space-2);
+    color: var(--text-subtle);
     font-size: 13px;
     flex: 0 0 auto;
   }
 
   .warning {
-    margin: 0 0 8px;
-    padding: 7px 10px;
-    border-radius: 6px;
-    background: #fef3c7;
-    color: #92400e;
+    margin: 0 0 var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--warn-soft);
+    color: var(--warn);
     font-size: 13px;
     flex: 0 0 auto;
   }
 
   .disclaimer {
     flex: 0 0 auto;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #e4e4e7;
-    color: #71717a;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--surface-glass-border);
+    color: var(--text-subtle);
     font-size: 11px;
     line-height: 1.4;
     text-align: center;
