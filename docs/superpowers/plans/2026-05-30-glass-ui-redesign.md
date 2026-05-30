@@ -13,6 +13,7 @@
 ## File Structure
 
 **New files:**
+
 - `src/lib/styles/tokens.css` — design tokens (light + dark), glass surface class, gradient-mesh background.
 - `src/lib/theme.ts` — pure `resolveTheme(pref, prefersDark)` helper + `ThemePref` type.
 - `src/lib/theme.test.ts` — unit tests for `resolveTheme`.
@@ -22,6 +23,7 @@
 - `src/lib/components/VerdictBanner.svelte` — renders the aggregated verdict.
 
 **Modified files:**
+
 - `src/app.css` — global reset becomes token-driven.
 - `src/routes/+layout.svelte` — import tokens, init theme store.
 - `src/routes/+page.svelte` — glass topbar, theme toggle, verdict banner, glass cards, states.
@@ -37,6 +39,7 @@
 ## Task 1: Design tokens + global CSS
 
 **Files:**
+
 - Create: `src/lib/styles/tokens.css`
 - Modify: `src/app.css`
 - Modify: `src/routes/+layout.svelte:3` (add import)
@@ -72,21 +75,34 @@
   --neutral-soft: rgba(113, 113, 122, 0.14);
 
   /* tier */
-  --tier-a-bg: #dbeafe; --tier-a-fg: #1e3a8a;
-  --tier-b-bg: #e0e7ff; --tier-b-fg: #3730a3;
-  --tier-c-bg: #eef0f4; --tier-c-fg: #374151;
-  --tier-d-bg: #fee2e2; --tier-d-fg: #7f1d1d;
+  --tier-a-bg: #dbeafe;
+  --tier-a-fg: #1e3a8a;
+  --tier-b-bg: #e0e7ff;
+  --tier-b-fg: #3730a3;
+  --tier-c-bg: #eef0f4;
+  --tier-c-fg: #374151;
+  --tier-d-bg: #fee2e2;
+  --tier-d-fg: #7f1d1d;
 
   /* glass */
   --glass-blur: 20px;
   --glass-sat: 180%;
 
   /* geometry */
-  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
-  --space-5: 20px; --space-6: 24px; --space-7: 32px; --space-8: 40px;
-  --radius-sm: 10px; --radius-md: 14px; --radius-lg: 18px; --radius-xl: 24px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
   --shadow-sm: 0 1px 2px rgba(17, 17, 26, 0.06), 0 2px 8px rgba(17, 17, 26, 0.05);
-  --shadow-md: 0 4px 16px rgba(17, 17, 26, 0.10);
+  --shadow-md: 0 4px 16px rgba(17, 17, 26, 0.1);
   --shadow-lg: 0 12px 40px rgba(17, 17, 26, 0.16);
 
   /* motion */
@@ -105,25 +121,33 @@
   --bg-elevated: #16171d;
   --surface-glass: rgba(30, 31, 40, 0.55);
   --surface-glass-strong: rgba(30, 31, 40, 0.78);
-  --surface-glass-border: rgba(255, 255, 255, 0.10);
+  --surface-glass-border: rgba(255, 255, 255, 0.1);
   --text: #f3f4f6;
   --text-muted: #b4b7c0;
   --text-subtle: #8a8d97;
   --accent: #818cf8;
   --accent-hover: #a5b4fc;
-  --accent-soft: rgba(129, 140, 248, 0.20);
+  --accent-soft: rgba(129, 140, 248, 0.2);
   --accent-contrast: #0b0c10;
   --focus-ring: rgba(129, 140, 248, 0.6);
 
-  --ok: #4ade80;  --ok-soft: rgba(34, 197, 94, 0.20);
-  --bad: #f87171;  --bad-soft: rgba(239, 68, 68, 0.22);
-  --warn: #fbbf24; --warn-soft: rgba(234, 179, 8, 0.22);
-  --neutral: #a1a1aa; --neutral-soft: rgba(161, 161, 170, 0.16);
+  --ok: #4ade80;
+  --ok-soft: rgba(34, 197, 94, 0.2);
+  --bad: #f87171;
+  --bad-soft: rgba(239, 68, 68, 0.22);
+  --warn: #fbbf24;
+  --warn-soft: rgba(234, 179, 8, 0.22);
+  --neutral: #a1a1aa;
+  --neutral-soft: rgba(161, 161, 170, 0.16);
 
-  --tier-a-bg: rgba(59, 130, 246, 0.22); --tier-a-fg: #bfdbfe;
-  --tier-b-bg: rgba(99, 102, 241, 0.22); --tier-b-fg: #c7d2fe;
-  --tier-c-bg: rgba(148, 163, 184, 0.18); --tier-c-fg: #d1d5db;
-  --tier-d-bg: rgba(239, 68, 68, 0.22); --tier-d-fg: #fecaca;
+  --tier-a-bg: rgba(59, 130, 246, 0.22);
+  --tier-a-fg: #bfdbfe;
+  --tier-b-bg: rgba(99, 102, 241, 0.22);
+  --tier-b-fg: #c7d2fe;
+  --tier-c-bg: rgba(148, 163, 184, 0.18);
+  --tier-c-fg: #d1d5db;
+  --tier-d-bg: rgba(239, 68, 68, 0.22);
+  --tier-d-fg: #fecaca;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
@@ -151,12 +175,14 @@
   background:
     radial-gradient(60% 50% at 12% 8%, var(--mesh-1), transparent 60%),
     radial-gradient(55% 45% at 88% 12%, var(--mesh-2), transparent 60%),
-    radial-gradient(50% 50% at 50% 100%, var(--mesh-3), transparent 60%),
-    var(--bg);
+    radial-gradient(50% 50% at 50% 100%, var(--mesh-3), transparent 60%), var(--bg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 ```
 
@@ -169,7 +195,14 @@ Replace the whole file with:
 
 :root {
   color-scheme: light dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
   background: var(--bg);
   color: var(--text);
   font-synthesis: none;
@@ -177,9 +210,12 @@ Replace the whole file with:
   -webkit-font-smoothing: antialiased;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   min-width: 320px;
   height: 100vh;
   margin: 0;
@@ -188,7 +224,12 @@ html, body {
   color: var(--text);
 }
 
-button, input, select, textarea { font: inherit; }
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
 
 button {
   border: 1px solid var(--surface-glass-border);
@@ -197,28 +238,53 @@ button {
   background: var(--surface-glass-strong);
   color: var(--text);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition:
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
-button:hover { border-color: var(--accent); }
-button:active { transform: translateY(1px); }
-button:disabled { cursor: not-allowed; opacity: 0.5; }
+button:hover {
+  border-color: var(--accent);
+}
+button:active {
+  transform: translateY(1px);
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 
-input, select, textarea {
+input,
+select,
+textarea {
   border: 1px solid var(--surface-glass-border);
   border-radius: var(--radius-sm);
   background: var(--bg-elevated);
   color: var(--text);
-  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
 }
-input, select { min-height: 38px; padding: var(--space-2) var(--space-3); }
-textarea { line-height: 1.5; }
-input:focus, select:focus, textarea:focus {
+input,
+select {
+  min-height: 38px;
+  padding: var(--space-2) var(--space-3);
+}
+textarea {
+  line-height: 1.5;
+}
+input:focus,
+select:focus,
+textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
   outline: none;
 }
 
-:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
 ```
 
 - [ ] **Step 3: Wire mesh background into `src/routes/+layout.svelte`**
@@ -251,6 +317,7 @@ git commit -m "feat(ui): add glass design tokens and mesh background"
 ## Task 2: Settings `theme` field (Rust + TS)
 
 **Files:**
+
 - Modify: `src-tauri/src/storage/settings_store.rs`
 - Modify: `src/lib/types.ts:51-78`
 - Modify: `src/lib/stores/settings.svelte.ts:11-20`
@@ -333,7 +400,7 @@ export type ThemePref = 'auto' | 'light' | 'dark';
 In `interface Settings`, after `check_updates_on_launch: boolean;` add:
 
 ```typescript
-  theme: ThemePref;
+theme: ThemePref;
 ```
 
 - [ ] **Step 6: Add default in `src/lib/stores/settings.svelte.ts`**
@@ -361,6 +428,7 @@ git commit -m "feat: add theme preference to settings (auto/light/dark)"
 ## Task 3: Theme resolution helper + store + layout wiring
 
 **Files:**
+
 - Create: `src/lib/theme.ts`
 - Create: `src/lib/theme.test.ts`
 - Create: `src/lib/stores/theme.svelte.ts`
@@ -475,7 +543,7 @@ import { theme } from '$lib/stores/theme.svelte';
 In the `onMount` callback, after `setLocale(settings.current.locale);` add:
 
 ```typescript
-    theme.init(settings.current.theme);
+theme.init(settings.current.theme);
 ```
 
 - [ ] **Step 7: Run full check + tests**
@@ -495,6 +563,7 @@ git commit -m "feat: theme store applies data-theme from preference + OS"
 ## Task 4: Verdict aggregation helper + test
 
 **Files:**
+
 - Create: `src/lib/verdict.ts`
 - Create: `src/lib/verdict.test.ts`
 
@@ -507,8 +576,14 @@ import type { Claim } from './types';
 
 function claim(partial: Partial<Claim>): Claim {
   return {
-    id: 'x', text: 't', start: 0, end: 1, kind: 'fact', reason: 'r',
-    verification: null, ...partial,
+    id: 'x',
+    text: 't',
+    start: 0,
+    end: 1,
+    kind: 'fact',
+    reason: 'r',
+    verification: null,
+    ...partial,
   };
 }
 
@@ -616,6 +691,7 @@ git commit -m "feat: add verdict aggregation helper"
 ## Task 5: i18n keys
 
 **Files:**
+
 - Modify: `src/lib/i18n/en.json`
 - Modify: `src/lib/i18n/cs.json`
 
@@ -679,6 +755,7 @@ git commit -m "feat(i18n): add verdict, theme, and loading-state strings"
 ## Task 6: VerdictBanner component
 
 **Files:**
+
 - Create: `src/lib/components/VerdictBanner.svelte`
 
 - [ ] **Step 1: Write `src/lib/components/VerdictBanner.svelte`**
@@ -706,7 +783,9 @@ git commit -m "feat(i18n): add verdict, theme, and loading-state strings"
   <div class="text">
     <strong class="headline">{t(`verdict.${verdict.kind}`)}</strong>
     {#if verdict.total > 0}
-      <span class="count">{tf('verdict.count', { verified: verdict.verified, total: verdict.total })}</span>
+      <span class="count"
+        >{tf('verdict.count', { verified: verdict.verified, total: verdict.total })}</span
+      >
     {/if}
   </div>
 </div>
@@ -732,17 +811,45 @@ git commit -m "feat(i18n): add verdict, theme, and loading-state strings"
     flex: 0 0 auto;
   }
 
-  .text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .headline { font-size: 15px; }
-  .count { color: var(--text-muted); font-size: 13px; }
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .headline {
+    font-size: 15px;
+  }
+  .count {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
 
-  .kind-mostly_verified { border-color: var(--ok); }
-  .kind-mostly_verified .icon { background: var(--ok-soft); color: var(--ok); }
-  .kind-disputed { border-color: var(--bad); }
-  .kind-disputed .icon { background: var(--bad-soft); color: var(--bad); }
-  .kind-no_consensus { border-color: var(--warn); }
-  .kind-no_consensus .icon { background: var(--warn-soft); color: var(--warn); }
-  .kind-unverified .icon { background: var(--neutral-soft); color: var(--neutral); }
+  .kind-mostly_verified {
+    border-color: var(--ok);
+  }
+  .kind-mostly_verified .icon {
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+  .kind-disputed {
+    border-color: var(--bad);
+  }
+  .kind-disputed .icon {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .kind-no_consensus {
+    border-color: var(--warn);
+  }
+  .kind-no_consensus .icon {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .kind-unverified .icon {
+    background: var(--neutral-soft);
+    color: var(--neutral);
+  }
 </style>
 ```
 
@@ -763,6 +870,7 @@ git commit -m "feat(ui): add verdict banner component"
 ## Task 7: Theme toggle component
 
 **Files:**
+
 - Create: `src/lib/components/ThemeToggle.svelte`
 
 - [ ] **Step 1: Write `src/lib/components/ThemeToggle.svelte`**
@@ -819,16 +927,24 @@ git commit -m "feat(ui): add verdict banner component"
     font-size: 13px;
     line-height: 1;
   }
-  .opt:hover { border-color: transparent; color: var(--text); }
+  .opt:hover {
+    border-color: transparent;
+    color: var(--text);
+  }
   .opt.active {
     background: var(--accent);
     color: var(--accent-contrast);
   }
   .sr {
     position: absolute;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>
 ```
@@ -850,6 +966,7 @@ git commit -m "feat(ui): add theme toggle segmented control"
 ## Task 8: Main page — topbar, verdict banner, glass cards, states
 
 **Files:**
+
 - Modify: `src/routes/+page.svelte`
 
 - [ ] **Step 1: Add imports**
@@ -864,57 +981,61 @@ import VerdictBanner from '$lib/components/VerdictBanner.svelte';
 - [ ] **Step 2: Replace the `<header>` markup (lines 63-73) with a glass topbar**
 
 ```svelte
-  <header class="topbar glass">
-    <div class="brand">
-      <h1>{t('app.title')}</h1>
-      <p>{t('app.tagline')}</p>
-    </div>
-    <nav>
-      <ThemeToggle />
-      <button type="button" onclick={() => goto(resolve('/settings'))}>
-        {t('common.settings')}
-      </button>
-    </nav>
-  </header>
+<header class="topbar glass">
+  <div class="brand">
+    <h1>{t('app.title')}</h1>
+    <p>{t('app.tagline')}</p>
+  </div>
+  <nav>
+    <ThemeToggle />
+    <button type="button" onclick={() => goto(resolve('/settings'))}>
+      {t('common.settings')}
+    </button>
+  </nav>
+</header>
 ```
 
 - [ ] **Step 3: Replace the result `running`/`done` blocks (lines 79-107)**
 
 ```svelte
-  <section class="result">
-    {#if analysisStore.status === 'running'}
-      <div class="loading glass">
-        <span class="spinner" aria-hidden="true"></span>
-        <div>
-          <p class="status">{t('summary.analyzing')}</p>
-          <p class="hint">{t('summary.loading_hint')}</p>
+<section class="result">
+  {#if analysisStore.status === 'running'}
+    <div class="loading glass">
+      <span class="spinner" aria-hidden="true"></span>
+      <div>
+        <p class="status">{t('summary.analyzing')}</p>
+        <p class="hint">{t('summary.loading_hint')}</p>
+      </div>
+    </div>
+  {:else if analysisStore.status === 'error'}
+    <p class="status error glass">
+      {tf('summary.error_prefix', { msg: analysisStore.error ?? '?' })}
+    </p>
+  {:else if analysisStore.status === 'done' && analysisStore.current}
+    <div class="grid">
+      <div class="left glass">
+        <VerdictBanner claims={analysisStore.current.claims} />
+        <p class="meta">
+          {tf('summary.claims_count', { count: analysisStore.current.claims.length })}
+        </p>
+        {#if analysisStore.current.truncated}
+          <p class="warning">{t('summary.truncated_warning')}</p>
+        {/if}
+        <div class="claim-scroll">
+          <ClaimText
+            input={analysisStore.current.input}
+            claims={analysisStore.current.claims}
+            selectedId={analysisStore.selectedId}
+            onSelect={(id) => analysisStore.select(id)}
+          />
         </div>
       </div>
-    {:else if analysisStore.status === 'error'}
-      <p class="status error glass">{tf('summary.error_prefix', { msg: analysisStore.error ?? '?' })}</p>
-    {:else if analysisStore.status === 'done' && analysisStore.current}
-      <div class="grid">
-        <div class="left glass">
-          <VerdictBanner claims={analysisStore.current.claims} />
-          <p class="meta">{tf('summary.claims_count', { count: analysisStore.current.claims.length })}</p>
-          {#if analysisStore.current.truncated}
-            <p class="warning">{t('summary.truncated_warning')}</p>
-          {/if}
-          <div class="claim-scroll">
-            <ClaimText
-              input={analysisStore.current.input}
-              claims={analysisStore.current.claims}
-              selectedId={analysisStore.selectedId}
-              onSelect={(id) => analysisStore.select(id)}
-            />
-          </div>
-        </div>
-        <div class="side-scroll">
-          <SidePanel claim={analysisStore.selectedClaim} />
-        </div>
+      <div class="side-scroll">
+        <SidePanel claim={analysisStore.selectedClaim} />
       </div>
-    {/if}
-  </section>
+    </div>
+  {/if}
+</section>
 ```
 
 - [ ] **Step 4: Replace the `<style>` block with token-driven glass styles**
@@ -946,9 +1067,22 @@ Replace the contents of the existing `<style>` (lines 112-229). Keep the layout 
     flex: 0 0 auto;
   }
 
-  .brand h1 { margin: 0; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
-  .brand p { margin: 2px 0 0; color: var(--text-subtle); font-size: 13px; }
-  nav { display: flex; align-items: center; gap: var(--space-2); }
+  .brand h1 {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .brand p {
+    margin: 2px 0 0;
+    color: var(--text-subtle);
+    font-size: 13px;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
 
   .result {
     flex: 1 1 auto;
@@ -966,16 +1100,29 @@ Replace the contents of the existing `<style>` (lines 112-229). Keep the layout 
     border-radius: var(--radius-md);
   }
   .spinner {
-    width: 18px; height: 18px;
+    width: 18px;
+    height: 18px;
     border: 2px solid var(--accent-soft);
     border-top-color: var(--accent);
     border-radius: 999px;
     animation: spin 0.8s linear infinite;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
-  .status { margin: 0; color: var(--text-muted); font-size: 14px; }
-  .hint { margin: 2px 0 0; color: var(--text-subtle); font-size: 13px; }
+  .status {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .hint {
+    margin: 2px 0 0;
+    color: var(--text-subtle);
+    font-size: 13px;
+  }
   .status.error {
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
@@ -1001,10 +1148,25 @@ Replace the contents of the existing `<style>` (lines 112-229). Keep the layout 
     border-radius: var(--radius-lg);
   }
 
-  .claim-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: var(--space-1); }
-  .side-scroll { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  .claim-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: var(--space-1);
+  }
+  .side-scroll {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+  }
 
-  .meta { margin: 0 0 var(--space-2); color: var(--text-subtle); font-size: 13px; flex: 0 0 auto; }
+  .meta {
+    margin: 0 0 var(--space-2);
+    color: var(--text-subtle);
+    font-size: 13px;
+    flex: 0 0 auto;
+  }
 
   .warning {
     margin: 0 0 var(--space-2);
@@ -1028,7 +1190,9 @@ Replace the contents of the existing `<style>` (lines 112-229). Keep the layout 
   }
 
   @media (max-width: 820px) {
-    .grid { grid-template-columns: 1fr; }
+    .grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 ```
@@ -1052,6 +1216,7 @@ git commit -m "feat(ui): glass topbar, verdict banner, and loading state on main
 ## Task 9: PasteInput reskin
 
 **Files:**
+
 - Modify: `src/lib/components/PasteInput.svelte`
 
 - [ ] **Step 1: Replace the `<style>` block (lines 101-153) with token-driven styles**
@@ -1064,10 +1229,15 @@ git commit -m "feat(ui): glass topbar, verdict banner, and loading state on main
     padding: var(--space-1);
     border: 2px solid transparent;
     border-radius: var(--radius-lg);
-    transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    transition:
+      border-color var(--dur) var(--ease),
+      box-shadow var(--dur) var(--ease);
   }
 
-  label { display: grid; gap: var(--space-2); }
+  label {
+    display: grid;
+    gap: var(--space-2);
+  }
 
   span {
     color: var(--text-muted);
@@ -1087,17 +1257,29 @@ git commit -m "feat(ui): glass topbar, verdict banner, and loading state on main
     resize: vertical;
   }
 
-  label:last-of-type textarea { min-height: 200px; }
+  label:last-of-type textarea {
+    min-height: 200px;
+  }
 
-  .bar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
-  .spacer { flex: 1; }
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+  }
+  .spacer {
+    flex: 1;
+  }
 
   .primary {
     border-color: var(--accent);
     background: var(--accent);
     color: var(--accent-contrast);
   }
-  .primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
 </style>
 ```
 
@@ -1118,29 +1300,50 @@ git commit -m "feat(ui): glass reskin for paste input"
 ## Task 10: ClaimText reskin
 
 **Files:**
+
 - Modify: `src/lib/components/ClaimText.svelte`
 
 - [ ] **Step 1: Replace the `<style>` block (lines 65-100) with token-driven styles**
 
 ```svelte
 <style>
-  .ct { margin: 0; line-height: 1.75; font-size: 15px; white-space: pre-wrap; color: var(--text); }
+  .ct {
+    margin: 0;
+    line-height: 1.75;
+    font-size: 15px;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
 
   .claim {
     border-radius: var(--radius-sm);
     padding: 1px 3px;
     cursor: pointer;
     outline: 2px solid transparent;
-    transition: outline-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+    transition:
+      outline-color var(--dur-fast) var(--ease),
+      background var(--dur-fast) var(--ease);
   }
 
-  .claim:hover { background: var(--accent-soft); }
-  .claim.selected { outline-color: var(--accent); }
+  .claim:hover {
+    background: var(--accent-soft);
+  }
+  .claim.selected {
+    outline-color: var(--accent);
+  }
 
-  .kind-fact { background: var(--ok-soft); }
-  .kind-inference { background: var(--warn-soft); }
-  .kind-opinion { background: var(--neutral-soft); }
-  .kind-contradiction { background: var(--bad-soft); }
+  .kind-fact {
+    background: var(--ok-soft);
+  }
+  .kind-inference {
+    background: var(--warn-soft);
+  }
+  .kind-opinion {
+    background: var(--neutral-soft);
+  }
+  .kind-contradiction {
+    background: var(--bad-soft);
+  }
 </style>
 ```
 
@@ -1161,6 +1364,7 @@ git commit -m "feat(ui): glass reskin for claim text highlights"
 ## Task 11: SourceCard + TierBadge reskin
 
 **Files:**
+
 - Modify: `src/lib/components/SourceCard.svelte`
 - Modify: `src/lib/components/TierBadge.svelte`
 
@@ -1176,10 +1380,22 @@ git commit -m "feat(ui): glass reskin for claim text highlights"
     font-weight: 700;
     text-transform: uppercase;
   }
-  .tier-a { background: var(--tier-a-bg); color: var(--tier-a-fg); }
-  .tier-b { background: var(--tier-b-bg); color: var(--tier-b-fg); }
-  .tier-c { background: var(--tier-c-bg); color: var(--tier-c-fg); }
-  .tier-d { background: var(--tier-d-bg); color: var(--tier-d-fg); }
+  .tier-a {
+    background: var(--tier-a-bg);
+    color: var(--tier-a-fg);
+  }
+  .tier-b {
+    background: var(--tier-b-bg);
+    color: var(--tier-b-fg);
+  }
+  .tier-c {
+    background: var(--tier-c-bg);
+    color: var(--tier-c-fg);
+  }
+  .tier-d {
+    background: var(--tier-d-bg);
+    color: var(--tier-d-fg);
+  }
 </style>
 ```
 
@@ -1197,9 +1413,15 @@ In the markup (line 22), change `class="card stance-{source.stance}"` to `class=
     border-radius: var(--radius-md);
   }
 
-  .stance-supports { border-left: 3px solid var(--ok); }
-  .stance-contradicts { border-left: 3px solid var(--bad); }
-  .stance-mentions { border-left: 3px solid var(--neutral); }
+  .stance-supports {
+    border-left: 3px solid var(--ok);
+  }
+  .stance-contradicts {
+    border-left: 3px solid var(--bad);
+  }
+  .stance-mentions {
+    border-left: 3px solid var(--neutral);
+  }
 
   header {
     display: flex;
@@ -1226,9 +1448,19 @@ In the markup (line 22), change `class="card stance-{source.stance}"` to `class=
     overflow-wrap: anywhere;
   }
 
-  h4 { margin: 0 0 var(--space-1); color: var(--text); font-size: 13px; line-height: 1.3; }
+  h4 {
+    margin: 0 0 var(--space-1);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.3;
+  }
 
-  .snippet { margin: 0 0 var(--space-2); color: var(--text-muted); font-size: 12px; line-height: 1.4; }
+  .snippet {
+    margin: 0 0 var(--space-2);
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
 
   button {
     padding: 0;
@@ -1239,7 +1471,10 @@ In the markup (line 22), change `class="card stance-{source.stance}"` to `class=
     font-size: 12px;
     font-weight: 700;
   }
-  button:hover { color: var(--accent-hover); border-color: transparent; }
+  button:hover {
+    color: var(--accent-hover);
+    border-color: transparent;
+  }
 </style>
 ```
 
@@ -1260,6 +1495,7 @@ git commit -m "feat(ui): glass reskin for source cards and tier badges"
 ## Task 12: SidePanel reskin + empty state
 
 **Files:**
+
 - Modify: `src/lib/components/SidePanel.svelte`
 
 - [ ] **Step 1: Change the root class and empty state markup**
@@ -1292,10 +1528,19 @@ Change `<aside class="sp">` (line 17) to `<aside class="sp glass">`. Replace the
     padding: var(--space-6) var(--space-3);
     text-align: center;
   }
-  .empty-icon { font-size: 28px; color: var(--text-subtle); }
-  .empty p { margin: 0; color: var(--text-subtle); font-size: 14px; }
+  .empty-icon {
+    font-size: 28px;
+    color: var(--text-subtle);
+  }
+  .empty p {
+    margin: 0;
+    color: var(--text-subtle);
+    font-size: 14px;
+  }
 
-  header { margin-bottom: var(--space-2); }
+  header {
+    margin-bottom: var(--space-2);
+  }
 
   .badge {
     display: inline-block;
@@ -1305,10 +1550,22 @@ Change `<aside class="sp">` (line 17) to `<aside class="sp glass">`. Replace the
     font-weight: 700;
     text-transform: uppercase;
   }
-  .kind-fact { background: var(--ok-soft); color: var(--ok); }
-  .kind-inference { background: var(--warn-soft); color: var(--warn); }
-  .kind-opinion { background: var(--neutral-soft); color: var(--neutral); }
-  .kind-contradiction { background: var(--bad-soft); color: var(--bad); }
+  .kind-fact {
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+  .kind-inference {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .kind-opinion {
+    background: var(--neutral-soft);
+    color: var(--neutral);
+  }
+  .kind-contradiction {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
 
   .quote {
     margin: 0 0 var(--space-3);
@@ -1319,10 +1576,22 @@ Change `<aside class="sp">` (line 17) to `<aside class="sp glass">`. Replace the
     font-size: 14px;
   }
 
-  section h3 { margin: 0 0 var(--space-1); color: var(--text-subtle); font-size: 12px; text-transform: uppercase; }
-  section p { margin: 0 0 var(--space-3); font-size: 14px; color: var(--text); }
+  section h3 {
+    margin: 0 0 var(--space-1);
+    color: var(--text-subtle);
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  section p {
+    margin: 0 0 var(--space-3);
+    font-size: 14px;
+    color: var(--text);
+  }
 
-  .muted { color: var(--text-subtle); font-style: italic; }
+  .muted {
+    color: var(--text-subtle);
+    font-style: italic;
+  }
 
   .verdict {
     margin: 0 0 var(--space-2);
@@ -1331,11 +1600,23 @@ Change `<aside class="sp">` (line 17) to `<aside class="sp glass">`. Replace the
     font-size: 13px;
     line-height: 1.4;
   }
-  .status-supported { background: var(--ok-soft); color: var(--ok); }
-  .status-contradicted { background: var(--bad-soft); color: var(--bad); }
-  .status-no_consensus { background: var(--warn-soft); color: var(--warn); }
+  .status-supported {
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+  .status-contradicted {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .status-no_consensus {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
   .status-not_found,
-  .status-not_verified { background: var(--neutral-soft); color: var(--text-muted); }
+  .status-not_verified {
+    background: var(--neutral-soft);
+    color: var(--text-muted);
+  }
 </style>
 ```
 
@@ -1356,6 +1637,7 @@ git commit -m "feat(ui): glass reskin for side panel with icon empty state"
 ## Task 13: UpdateBanner reskin
 
 **Files:**
+
 - Modify: `src/lib/components/UpdateBanner.svelte`
 
 - [ ] **Step 1: Read the file first to see its current markup/styles**
@@ -1365,6 +1647,7 @@ Run: `cat src/lib/components/UpdateBanner.svelte`
 - [ ] **Step 2: Add `glass` to the banner root element's class and replace hardcoded colors**
 
 Add `glass` to the outermost element's `class`. In its `<style>`, replace any hardcoded hex/background/border/`color` values with the nearest tokens following this mapping:
+
 - background panel → remove (the `glass` class provides it) or `var(--surface-glass)`
 - border → `1px solid var(--surface-glass-border)`
 - border-radius → `var(--radius-md)`
@@ -1391,6 +1674,7 @@ git commit -m "feat(ui): glass reskin for update banner"
 ## Task 14: Settings page reskin + theme control
 
 **Files:**
+
 - Modify: `src/routes/settings/+page.svelte`
 
 - [ ] **Step 1: Read the current file to map sections**
@@ -1408,10 +1692,10 @@ import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 Add a new `<section>` (after the header, before the provider sections) using the existing section markup pattern:
 
 ```svelte
-  <section>
-    <h2>{t('theme.label')}</h2>
-    <ThemeToggle />
-  </section>
+<section>
+  <h2>{t('theme.label')}</h2>
+  <ThemeToggle />
+</section>
 ```
 
 - [ ] **Step 3: Add `glass` to each `<section>` and the header**
@@ -1421,6 +1705,7 @@ For every `<section>` element and the `<header>`/`<footer>` in this file, add th
 - [ ] **Step 4: Replace hardcoded values in the `<style>` block with tokens**
 
 Map every hardcoded value in the file's `<style>` to tokens using the same scheme as Task 13:
+
 - panel backgrounds → provided by `.glass`; drop standalone `background: #ffffff`
 - `border: 1px solid #e4e4e7` (and similar) → `1px solid var(--surface-glass-border)`
 - `border-radius` 6–8px → `var(--radius-sm)` / `var(--radius-md)`; cards → `var(--radius-lg)`
@@ -1447,6 +1732,7 @@ git commit -m "feat(ui): glass reskin for settings with theme control"
 ## Task 15: Full verification + version bump
 
 **Files:**
+
 - Modify: `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `CHANGELOG.md`
 
 - [ ] **Step 1: Run the full gate**
@@ -1463,6 +1749,7 @@ Expected: all pass (including new theme tests).
 
 Run: `pnpm tauri:dev`
 Verify by hand:
+
 - App loads with glass panels over the mesh background.
 - Theme toggle Auto/Light/Dark switches instantly; OS dark-mode change flips Auto live.
 - Toggle choice persists across relaunch.
@@ -1514,6 +1801,7 @@ git push origin main --tags
 ## Self-Review
 
 **Spec coverage:**
+
 - Glass design system / tokens → Task 1. ✓
 - Light/dark + auto + toggle → Tasks 2 (field), 3 (resolution+store), 7 (toggle), 14 (settings control). ✓
 - Verdict banner → Tasks 4 (helper), 6 (component), 8 (wired into main page). ✓

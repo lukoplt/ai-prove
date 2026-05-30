@@ -95,17 +95,17 @@ Add a `theme` field across the stack (backward compatible):
 All component reskins keep their props, events, and the data shapes in `types.ts`. Only
 markup classes and CSS change, except where a small UX addition is noted.
 
-| Component | Change |
-|-----------|--------|
-| `+layout.svelte` | Import `tokens.css`; init theme store; set `data-theme`; keep boot screen (glass-styled). |
-| `routes/+page.svelte` | Glass sticky topbar (wordmark + tagline, theme toggle, Settings). Glass result cards. **New verdict banner** above claims. Responsive stack < 820px. |
+| Component                      | Change                                                                                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `+layout.svelte`               | Import `tokens.css`; init theme store; set `data-theme`; keep boot screen (glass-styled).                                                              |
+| `routes/+page.svelte`          | Glass sticky topbar (wordmark + tagline, theme toggle, Settings). Glass result cards. **New verdict banner** above claims. Responsive stack < 820px.   |
 | `routes/settings/+page.svelte` | Glass cards, clearer section grouping (provider / keys / behavior / about), theme segmented control. Footer credit kept (coffee link already removed). |
-| `PasteInput.svelte` | Glass fields, accent focus ring, drag-over = accent glow (not dashed border), icon+text buttons. |
-| `ClaimText.svelte` | Softer inline highlight (kind-colored underline + soft hover bg), selected = accent ring. Better long-text readability. |
-| `SidePanel.svelte` | Glass panel; kind badge; verdict as colored status chip block; sources list. Empty state = icon + text. |
-| `SourceCard.svelte` | Glass card; tier badge + colored stance pill; hostname; quoted snippet; "Open →". Stance left-border kept. |
-| `TierBadge.svelte` | Token-driven tier colors, consistent with system. |
-| `UpdateBanner.svelte` | Subtle glass banner, accent action. |
+| `PasteInput.svelte`            | Glass fields, accent focus ring, drag-over = accent glow (not dashed border), icon+text buttons.                                                       |
+| `ClaimText.svelte`             | Softer inline highlight (kind-colored underline + soft hover bg), selected = accent ring. Better long-text readability.                                |
+| `SidePanel.svelte`             | Glass panel; kind badge; verdict as colored status chip block; sources list. Empty state = icon + text.                                                |
+| `SourceCard.svelte`            | Glass card; tier badge + colored stance pill; hostname; quoted snippet; "Open →". Stance left-border kept.                                             |
+| `TierBadge.svelte`             | Token-driven tier colors, consistent with system.                                                                                                      |
+| `UpdateBanner.svelte`          | Subtle glass banner, accent action.                                                                                                                    |
 
 ### New: Verdict banner
 
