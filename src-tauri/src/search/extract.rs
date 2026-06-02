@@ -26,6 +26,17 @@ impl Extractor {
     pub async fn fetch_and_extract(&self, url_str: &str) -> AppResult<String> {
         let url =
             Url::parse(url_str).map_err(|error| AppError::Invalid(format!("bad url: {error}")))?;
+
+        // Defense in depth: only ever fetch over http(s). Source URLs come from
+        // the search provider, but never let a stray file://, ftp://, or custom
+        // scheme reach the HTTP client.
+        if !matches!(url.scheme(), "http" | "https") {
+            return Err(AppError::Invalid(format!(
+                "refusing non-http(s) url scheme: {}",
+                url.scheme()
+            )));
+        }
+
         let response = self
             .client
             .get(url.clone())
@@ -101,5 +112,21 @@ mod tests {
     #[test]
     fn truncate_chars_passthrough_when_short() {
         assert_eq!(truncate_chars("hi", 100), "hi");
+    }
+
+    #[tokio::test]
+    async fn rejects_non_http_schemes() {
+        let extractor = Extractor::new().unwrap();
+        for url in [
+            "file:///etc/passwd",
+            "ftp://example.com/x",
+            "data:text/html,x",
+        ] {
+            let error = extractor.fetch_and_extract(url).await.unwrap_err();
+            assert!(
+                error.to_string().contains("non-http(s) url scheme"),
+                "expected scheme rejection for {url}, got: {error}"
+            );
+        }
     }
 }

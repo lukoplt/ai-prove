@@ -1,6 +1,6 @@
 [package]
 name = "druhy-nazor"
-version = "0.4.1"
+version = "0.4.2"
 description = "PROVE — Prompt · Response · Output · Verification · Engine"
 authors = ["PROVE contributors"]
 edition = "2021"

@@ -3,6 +3,13 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.4.2] — 2026-06-01
+
+### Security
+
+- Pinned every GitHub Actions dependency in `ci.yml` and `release.yml` to a full commit SHA instead of a mutable tag (`@v6`, `@stable`, `@v0`). Closes the supply-chain path where a compromised third-party action (the `tj-actions/changed-files` class of attack) could steal the release workflow's `GITHUB_TOKEN` and tamper with published binaries.
+- `Extractor::fetch_and_extract` now rejects any non-`http(s)` URL scheme before issuing a request, as defense-in-depth against a stray `file://`, `ftp://`, or custom-scheme source URL reaching the HTTP client.
+
 ## [0.4.1] — 2026-05-31
 
 ### Changed
@@ -68,6 +75,10 @@ First clean minor release. Folds in everything from the 0.2.x iteration cycle: t
 
 The `v0.1.0` and `v0.1.1` tags from the rebrand cycle (formerly _Druhý názor_) were removed when PROVE was promoted to a clean 0.2 release. Nothing about their content is preserved here; the project history is intact on `main`.
 
+[0.4.2]: https://github.com/lukoplt/ai-prove/releases/tag/v0.4.2
+[0.4.1]: https://github.com/lukoplt/ai-prove/releases/tag/v0.4.1
+[0.4.0]: https://github.com/lukoplt/ai-prove/releases/tag/v0.4.0
+[0.3.1]: https://github.com/lukoplt/ai-prove/releases/tag/v0.3.1
 [0.3.0]: https://github.com/lukoplt/ai-prove/releases/tag/v0.3.0
 [0.2.3]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.3
 [0.2.2]: https://github.com/lukoplt/ai-prove/releases/tag/v0.2.2
