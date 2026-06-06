@@ -3,6 +3,20 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.4.3] — 2026-06-06
+
+### Added
+
+- New **web-verification limit** setting: choose how many factual claims are checked against the internet per analysis (4 / 8 / 12 / 16 / 20), or **All** to verify every factual claim. Default stays 8. Lower values are faster and use fewer web searches; higher values are more thorough. The hint notes it needs a Brave Search API key.
+
+### Changed
+
+- The "only the first N claims are verified" message now reflects the configured limit instead of a fixed 8.
+
+### Fixed
+
+- The analysis path now validates persisted settings and falls back to defaults if the stored settings file is invalid (e.g. a hand-edited verification limit of 0), avoiding a stalled result.
+
 ## [0.4.2] — 2026-06-01
 
 ### Security
