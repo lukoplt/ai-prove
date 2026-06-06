@@ -20,7 +20,6 @@ use uuid::Uuid;
 
 pub const ACCOUNT_ANTHROPIC: &str = "anthropic";
 pub const ACCOUNT_BRAVE: &str = "brave";
-pub const MAX_VERIFIED_CLAIMS: usize = 8;
 
 fn build_llm_provider(settings: &Settings) -> AppResult<Arc<dyn LlmProvider>> {
     match settings.provider {
@@ -123,6 +122,7 @@ pub async fn analyze_text<R: Runtime>(
         outcome.claims,
         analysis.truncated,
         settings.cache_ttl_days,
+        settings.verified_claims_limit.map(|limit| limit as usize),
         &settings.locale,
     );
 
@@ -130,16 +130,19 @@ pub async fn analyze_text<R: Runtime>(
 }
 
 fn load_settings<R: Runtime>(app: &AppHandle<R>) -> Settings {
-    let Some(settings) = app
+    let candidate = app
         .store(SETTINGS_FILE)
         .ok()
         .and_then(|store| store.get(SETTINGS_KEY))
-        .and_then(|value| serde_json::from_value(value).ok())
-    else {
-        return Settings::with_system_locale();
-    };
+        .and_then(|value| serde_json::from_value::<Settings>(value).ok());
 
-    settings
+    // Fall back to defaults if the persisted settings are missing or invalid
+    // (e.g. a hand-edited `verified_claims_limit` of 0), so the analysis path
+    // never runs on settings that `set_settings` would have rejected.
+    match candidate {
+        Some(settings) if settings.validate().is_ok() => settings,
+        _ => Settings::with_system_locale(),
+    }
 }
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
@@ -154,6 +157,7 @@ fn spawn_verifications<R: Runtime>(
     claims: Vec<Claim>,
     truncated: bool,
     cache_ttl_days: u32,
+    verified_limit: Option<usize>,
     locale: &str,
 ) {
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -170,7 +174,7 @@ fn spawn_verifications<R: Runtime>(
     let _ = crate::storage::history::insert(&db, &baseline);
 
     let all_fact_claims = collect_fact_claims(&claims);
-    let (fact_claims, skipped_fact_claims) = split_fact_claims(&claims);
+    let (fact_claims, skipped_fact_claims) = split_fact_claims(&claims, verified_limit);
 
     if all_fact_claims.is_empty() {
         return;
@@ -202,6 +206,7 @@ fn spawn_verifications<R: Runtime>(
         &analysis_id,
         &mut final_claims_vec,
         skipped_fact_claims,
+        verified_limit.unwrap_or(0),
         locale,
     );
 
@@ -300,17 +305,16 @@ fn collect_fact_claims(claims: &[Claim]) -> Vec<Claim> {
         .collect()
 }
 
-fn split_fact_claims(claims: &[Claim]) -> (Vec<Claim>, Vec<Claim>) {
+/// Splits factual claims into those verified against the web and those skipped.
+/// `limit == None` verifies all factual claims (the "all" setting); `Some(n)`
+/// verifies the first `n` and skips the rest.
+fn split_fact_claims(claims: &[Claim], limit: Option<usize>) -> (Vec<Claim>, Vec<Claim>) {
     let all_fact_claims = collect_fact_claims(claims);
-    let verified = all_fact_claims
-        .iter()
-        .take(MAX_VERIFIED_CLAIMS)
-        .cloned()
-        .collect();
-    let skipped = all_fact_claims
-        .into_iter()
-        .skip(MAX_VERIFIED_CLAIMS)
-        .collect();
+    let Some(limit) = limit else {
+        return (all_fact_claims, Vec::new());
+    };
+    let verified = all_fact_claims.iter().take(limit).cloned().collect();
+    let skipped = all_fact_claims.into_iter().skip(limit).collect();
 
     (verified, skipped)
 }
@@ -320,10 +324,11 @@ fn mark_skipped_fact_claims<R: Runtime>(
     analysis_id: &str,
     claims: &mut [Claim],
     skipped_fact_claims: Vec<Claim>,
+    limit: usize,
     locale: &str,
 ) {
     for claim in skipped_fact_claims {
-        let verification = skipped_fact_verification(locale);
+        let verification = skipped_fact_verification(limit, locale);
         if let Some(target) = claims.iter_mut().find(|candidate| candidate.id == claim.id) {
             target.verification = Some(verification.clone());
         }
@@ -364,10 +369,10 @@ fn mark_web_search_disabled_fact_claims<R: Runtime>(
 }
 
 #[must_use]
-fn skipped_fact_verification(locale: &str) -> Verification {
+fn skipped_fact_verification(limit: usize, locale: &str) -> Verification {
     let summary = match locale {
-        "cs" => format!("Ověřuje se jen prvních {MAX_VERIFIED_CLAIMS} faktických tvrzení."),
-        _ => format!("Only the first {MAX_VERIFIED_CLAIMS} factual claims are verified."),
+        "cs" => format!("Ověřuje se jen prvních {limit} faktických tvrzení."),
+        _ => format!("Only the first {limit} factual claims are verified."),
     };
     Verification {
         status: VerificationStatus::NotVerified,
@@ -401,6 +406,66 @@ fn verification_failure_message(locale: &str, error: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::ClaimKind;
+
+    fn fact(id: &str) -> Claim {
+        Claim {
+            id: id.to_string(),
+            text: format!("fact {id}"),
+            start: 0,
+            end: 0,
+            kind: ClaimKind::Fact,
+            reason: String::new(),
+            verification: None,
+        }
+    }
+
+    fn opinion(id: &str) -> Claim {
+        Claim {
+            kind: ClaimKind::Opinion,
+            ..fact(id)
+        }
+    }
+
+    #[test]
+    fn split_fact_claims_caps_at_limit() {
+        let claims = vec![fact("c1"), opinion("c2"), fact("c3"), fact("c4")];
+        let (verified, skipped) = split_fact_claims(&claims, Some(2));
+
+        assert_eq!(verified.len(), 2);
+        assert_eq!(verified[0].id, "c1");
+        assert_eq!(verified[1].id, "c3");
+        assert_eq!(skipped.len(), 1);
+        assert_eq!(skipped[0].id, "c4");
+    }
+
+    #[test]
+    fn split_fact_claims_none_verifies_all_and_skips_none() {
+        let claims = vec![fact("c1"), opinion("c2"), fact("c3"), fact("c4")];
+        let (verified, skipped) = split_fact_claims(&claims, None);
+
+        assert_eq!(verified.len(), 3);
+        assert!(skipped.is_empty());
+    }
+
+    #[test]
+    fn split_fact_claims_limit_at_or_above_count_skips_none() {
+        let claims = vec![fact("c1"), fact("c2")];
+        let (verified, skipped) = split_fact_claims(&claims, Some(8));
+
+        assert_eq!(verified.len(), 2);
+        assert!(skipped.is_empty());
+    }
+
+    #[test]
+    fn skipped_fact_verification_uses_limit_in_message() {
+        let verification = skipped_fact_verification(3, "cs");
+        assert_eq!(verification.status, VerificationStatus::NotVerified);
+        assert_eq!(
+            verification.summary,
+            "Ověřuje se jen prvních 3 faktických tvrzení."
+        );
+    }
 
     #[test]
     fn web_search_disabled_verification_is_not_verified_without_sources() {

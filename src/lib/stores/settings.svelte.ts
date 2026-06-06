@@ -4,6 +4,7 @@ import {
   ACCOUNT_BRAVE,
   DEFAULT_ANTHROPIC_MODEL,
   DEFAULT_CLI_COMMAND,
+  DEFAULT_VERIFIED_CLAIMS_LIMIT,
   type Settings,
 } from '$lib/types';
 
@@ -17,6 +18,7 @@ const defaults: Settings = {
   cli_command: DEFAULT_CLI_COMMAND,
   check_updates_on_launch: false,
   theme: 'auto',
+  verified_claims_limit: DEFAULT_VERIFIED_CLAIMS_LIMIT,
 };
 
 let current = $state<Settings>(defaults);

@@ -3,6 +3,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import {
   DEFAULT_ANTHROPIC_MODEL,
   DEFAULT_CLI_COMMAND,
+  DEFAULT_VERIFIED_CLAIMS_LIMIT,
   type AnalyzeInput,
   type Analysis,
   type ApiAccount,
@@ -33,6 +34,7 @@ function browserDefaultSettings(): Settings {
     cli_command: DEFAULT_CLI_COMMAND,
     check_updates_on_launch: false,
     theme: 'auto',
+    verified_claims_limit: DEFAULT_VERIFIED_CLAIMS_LIMIT,
   };
 }
 
@@ -243,16 +245,20 @@ function browserPreviewStrings(locale: 'cs' | 'en') {
     return {
       claimReason: 'Lokální vývojový náhled bez volání LLM.',
       verifiedSummary: 'Lokální vývojový náhled: tvrzení je označeno jako ověřené.',
-      skippedSummary: 'Ověřuje se jen prvních 8 faktických tvrzení.',
       sampleSourceTitle: 'Ukázkový zdroj pro lokální náhled',
     };
   }
   return {
     claimReason: 'Local development preview without LLM calls.',
     verifiedSummary: 'Local development preview: claim is marked as supported.',
-    skippedSummary: 'Only the first 8 factual claims are verified.',
     sampleSourceTitle: 'Sample source for local preview',
   };
+}
+
+function skippedSummaryText(locale: 'cs' | 'en', limit: number): string {
+  return locale === 'cs'
+    ? `Ověřuje se jen prvních ${limit} faktických tvrzení.`
+    : `Only the first ${limit} factual claims are verified.`;
 }
 
 function browserClaims(input: string): Claim[] {
@@ -302,10 +308,13 @@ function browserKind(text: string): Claim['kind'] {
 
 function queueBrowserVerifications(analysisId: string, claims: Claim[]): void {
   const locale = browserLocale();
-  const { verifiedSummary, skippedSummary, sampleSourceTitle } = browserPreviewStrings(locale);
+  const { verifiedSummary, sampleSourceTitle } = browserPreviewStrings(locale);
   const factClaims = claims.filter((claim) => claim.kind === 'fact');
 
-  factClaims.slice(0, 8).forEach((claim, index) => {
+  const limit = browserReadSettings().verified_claims_limit;
+  const verifiedCount = limit === null ? factClaims.length : limit;
+
+  factClaims.slice(0, verifiedCount).forEach((claim, index) => {
     setTimeout(
       () => {
         emitBrowserVerified({
@@ -330,7 +339,8 @@ function queueBrowserVerifications(analysisId: string, claims: Claim[]): void {
     );
   });
 
-  factClaims.slice(8).forEach((claim, index) => {
+  const skippedSummary = skippedSummaryText(locale, verifiedCount);
+  factClaims.slice(verifiedCount).forEach((claim, index) => {
     setTimeout(
       () => {
         emitBrowserVerified({
@@ -343,7 +353,7 @@ function queueBrowserVerifications(analysisId: string, claims: Claim[]): void {
           },
         });
       },
-      450 + (8 + index) * 120,
+      450 + verifiedCount * 350 + index * 120,
     );
   });
 }

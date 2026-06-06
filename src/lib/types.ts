@@ -62,6 +62,8 @@ export interface Settings {
   cli_command: string;
   check_updates_on_launch: boolean;
   theme: ThemePref;
+  /** How many factual claims to verify against the web. `null` means all. */
+  verified_claims_limit: number | null;
 }
 
 export interface LatestRelease {
@@ -75,6 +77,10 @@ export interface LatestRelease {
 
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 export const DEFAULT_CLI_COMMAND = 'claude -p';
+export const DEFAULT_VERIFIED_CLAIMS_LIMIT = 8;
+
+/** Selectable web-verification limits for the settings UI. `null` = all. */
+export const VERIFIED_CLAIMS_LIMIT_OPTIONS: Array<number | null> = [4, 8, 12, 16, 20, null];
 
 export const ACCOUNT_ANTHROPIC = 'anthropic';
 export const ACCOUNT_BRAVE = 'brave';

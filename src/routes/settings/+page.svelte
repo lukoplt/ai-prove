@@ -12,7 +12,13 @@
   import { setLocale } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
   import { t } from '$lib/stores/i18n.svelte';
-  import { ACCOUNT_ANTHROPIC, ACCOUNT_BRAVE, type ApiAccount, type Settings } from '$lib/types';
+  import {
+    ACCOUNT_ANTHROPIC,
+    ACCOUNT_BRAVE,
+    VERIFIED_CLAIMS_LIMIT_OPTIONS,
+    type ApiAccount,
+    type Settings,
+  } from '$lib/types';
 
   let local: Settings = $state({ ...settings.current });
   let cliPreset: CliPresetId = $state(commandToCliPreset(local.cli_command));
@@ -127,6 +133,24 @@
       </button>
     </div>
     <small class="hint">{t('settings.brave_key_hint')}</small>
+  </section>
+
+  <section class="settings-grid glass">
+    <h2>{t('settings.verification_section')}</h2>
+    <label>
+      <span>{t('settings.verified_limit_label')}</span>
+      <select bind:value={local.verified_claims_limit}>
+        {#if local.verified_claims_limit !== null && !VERIFIED_CLAIMS_LIMIT_OPTIONS.includes(local.verified_claims_limit)}
+          <option value={local.verified_claims_limit}>{local.verified_claims_limit}</option>
+        {/if}
+        {#each VERIFIED_CLAIMS_LIMIT_OPTIONS as option (option ?? 'all')}
+          <option value={option}>
+            {option === null ? t('settings.verified_limit_all') : option}
+          </option>
+        {/each}
+      </select>
+    </label>
+    <small class="hint">{t('settings.verified_limit_hint')}</small>
   </section>
 
   <section class="settings-grid glass">

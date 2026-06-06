@@ -12,6 +12,7 @@ const cliSettings: Settings = {
   cli_command: 'claude -p',
   check_updates_on_launch: false,
   theme: 'auto',
+  verified_claims_limit: 8,
 };
 
 const messages = {

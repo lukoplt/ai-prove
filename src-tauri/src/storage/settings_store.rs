@@ -7,6 +7,9 @@ pub const SETTINGS_KEY: &str = "settings";
 pub const DEFAULT_ANTHROPIC_MODEL: &str = "claude-haiku-4-5-20251001";
 pub const DEFAULT_CLI_COMMAND: &str = "claude -p";
 
+/// Default number of factual claims verified against the web per analysis.
+pub const DEFAULT_VERIFIED_CLAIMS_LIMIT: u32 = 8;
+
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ProviderKind {
@@ -52,6 +55,13 @@ pub struct Settings {
     /// UI theme preference. `Auto` follows the OS color scheme.
     #[serde(default)]
     pub theme: ThemePref,
+
+    /// How many factual claims are verified against the web per analysis.
+    /// `None` means "all" — every factual claim is verified (up to the
+    /// atomization cap of `MAX_CLAIMS`). `Some(n)` verifies only the first `n`
+    /// factual claims; the rest are marked `NotVerified`. Default `Some(8)`.
+    #[serde(default = "default_verified_claims_limit")]
+    pub verified_claims_limit: Option<u32>,
 }
 
 fn default_anthropic_model() -> String {
@@ -60,6 +70,11 @@ fn default_anthropic_model() -> String {
 
 fn default_cli_command() -> String {
     DEFAULT_CLI_COMMAND.to_string()
+}
+
+#[allow(clippy::unnecessary_wraps)] // serde default for an `Option<u32>` field
+fn default_verified_claims_limit() -> Option<u32> {
+    Some(DEFAULT_VERIFIED_CLAIMS_LIMIT)
 }
 
 impl Default for Settings {
@@ -74,6 +89,7 @@ impl Default for Settings {
             cli_command: DEFAULT_CLI_COMMAND.to_string(),
             check_updates_on_launch: false,
             theme: ThemePref::Auto,
+            verified_claims_limit: Some(DEFAULT_VERIFIED_CLAIMS_LIMIT),
         }
     }
 }
@@ -120,6 +136,15 @@ impl Settings {
 
         if self.hotkey.trim().is_empty() {
             return Err(AppError::Invalid("hotkey cannot be empty".into()));
+        }
+
+        if let Some(limit) = self.verified_claims_limit {
+            let max = crate::pipeline::atomize::MAX_CLAIMS;
+            if limit == 0 || limit as usize > max {
+                return Err(AppError::Invalid(format!(
+                    "verified_claims_limit out of range (1..={max} or null for all), got {limit}"
+                )));
+            }
         }
 
         match self.provider {
@@ -268,6 +293,70 @@ mod tests {
         let json = serde_json::to_string(&settings).unwrap();
         let back: Settings = serde_json::from_str(&json).unwrap();
         assert_eq!(back.theme, ThemePref::Dark);
+    }
+
+    #[test]
+    fn default_verified_claims_limit_is_eight() {
+        assert_eq!(
+            Settings::default().verified_claims_limit,
+            Some(DEFAULT_VERIFIED_CLAIMS_LIMIT)
+        );
+    }
+
+    #[test]
+    fn legacy_settings_without_verified_limit_deserializes_to_default() {
+        let legacy = r#"{
+            "locale": "cs",
+            "hotkey": "CommandOrControl+Shift+D",
+            "cache_ttl_days": 7,
+            "onboarded": false
+        }"#;
+        let parsed: Settings = serde_json::from_str(legacy).unwrap();
+        assert_eq!(
+            parsed.verified_claims_limit,
+            Some(DEFAULT_VERIFIED_CLAIMS_LIMIT)
+        );
+    }
+
+    #[test]
+    fn verified_limit_all_validates() {
+        let settings = Settings {
+            verified_claims_limit: None,
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_ok());
+    }
+
+    #[test]
+    fn verified_limit_zero_rejected() {
+        let settings = Settings {
+            verified_claims_limit: Some(0),
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_err());
+    }
+
+    #[test]
+    fn verified_limit_over_max_rejected() {
+        let over_max = u32::try_from(crate::pipeline::atomize::MAX_CLAIMS).unwrap() + 1;
+        let settings = Settings {
+            verified_claims_limit: Some(over_max),
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_err());
+    }
+
+    #[test]
+    fn verified_limit_roundtrips_json() {
+        for limit in [None, Some(1), Some(8), Some(25)] {
+            let settings = Settings {
+                verified_claims_limit: limit,
+                ..Settings::default()
+            };
+            let json = serde_json::to_string(&settings).unwrap();
+            let back: Settings = serde_json::from_str(&json).unwrap();
+            assert_eq!(back.verified_claims_limit, limit);
+        }
     }
 
     #[test]
