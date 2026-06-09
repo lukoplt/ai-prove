@@ -27,3 +27,6 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/extensions.json
 .claude/
+
+# gstack (local security reports, artifacts)
+.gstack/
