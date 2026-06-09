@@ -3,6 +3,13 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [0.4.4] — 2026-06-09
+
+### Security
+
+- Hardened source fetching against SSRF. The web extractor now refuses to fetch loopback, private, link-local, carrier-grade-NAT, and unique-local addresses (plus `localhost`/`*.local` hosts), and re-checks the host and scheme on every redirect hop — closing a bypass where a public page could redirect to an internal address. Only http(s) is followed, capped at 10 redirects.
+- CI now runs `cargo audit` on Rust dependencies on every push and pull request (the JavaScript side was already covered).
+
 ## [0.4.3] — 2026-06-06
 
 ### Added
