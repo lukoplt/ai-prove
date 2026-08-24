@@ -6,6 +6,7 @@ import {
   type Analysis,
   type ApiAccount,
   type Claim,
+  type HistoryEntry,
   type LatestRelease,
   type Settings,
   type Verification,
@@ -105,6 +106,7 @@ export async function analyzeText(input: string | AnalyzeInput): Promise<string>
   emitBrowserStarted({ analysisId });
   await new Promise((resolve) => setTimeout(resolve, 250));
   const analysis = buildBrowserAnalysis(analysisId, trimmed);
+  browserHistory.push(analysis);
   emitBrowserClaims({
     analysisId,
     analysis,
@@ -173,6 +175,52 @@ export async function onClaimVerified(
 
   browserVerifiedHandlers.add(handler);
   return () => browserVerifiedHandlers.delete(handler);
+}
+
+/** In-memory stand-in for the SQLite history when running in browser preview. */
+const browserHistory: Analysis[] = [];
+
+export async function listHistory(query?: string, limit = 50): Promise<HistoryEntry[]> {
+  if (isTauriRuntime()) return invoke<HistoryEntry[]>('list_history', { query, limit });
+
+  const needle = query?.trim().toLowerCase() ?? '';
+  return browserHistory
+    .filter((analysis) => !needle || analysis.input.toLowerCase().includes(needle))
+    .slice()
+    .sort((a, b) => b.created_at - a.created_at)
+    .slice(0, limit)
+    .map((analysis) => ({
+      id: analysis.id,
+      created_at: analysis.created_at,
+      preview: analysis.input.split(/\s+/).join(' ').slice(0, 160),
+      claim_count: analysis.claims.length,
+    }));
+}
+
+export async function getAnalysis(id: string): Promise<Analysis> {
+  if (isTauriRuntime()) return invoke<Analysis>('get_analysis', { id });
+
+  const found = browserHistory.find((analysis) => analysis.id === id);
+  if (!found) throw { code: 'not_found', message: `analysis ${id}` };
+  return found;
+}
+
+export async function deleteAnalysis(id: string): Promise<void> {
+  if (isTauriRuntime()) {
+    await invoke('delete_analysis', { id });
+    return;
+  }
+
+  const index = browserHistory.findIndex((analysis) => analysis.id === id);
+  if (index >= 0) browserHistory.splice(index, 1);
+}
+
+export async function clearHistory(): Promise<number> {
+  if (isTauriRuntime()) return invoke<number>('clear_history');
+
+  const removed = browserHistory.length;
+  browserHistory.length = 0;
+  return removed;
 }
 
 export async function openInBrowser(url: string): Promise<void> {

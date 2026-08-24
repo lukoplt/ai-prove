@@ -110,6 +110,27 @@
     "finish": "Start using PROVE",
     "skip": "Skip"
   },
+  "history": {
+    "title": "History",
+    "search_label": "Search history",
+    "search_placeholder": "Search saved analyses…",
+    "empty": "Nothing here yet. Analyses are saved automatically.",
+    "empty_search": "Nothing matches that search.",
+    "loading": "Loading…",
+    "claims": "{count} claims",
+    "open": "Open",
+    "delete": "Delete",
+    "delete_confirm_title": "Delete this analysis?",
+    "delete_confirm_body": "The record is permanently removed from your computer.",
+    "clear_all": "Delete all history",
+    "clear_confirm_title": "Delete all history?",
+    "clear_confirm_body": "Every saved analysis is permanently removed from your computer. This cannot be undone.",
+    "cleared": "Deleted {count} records",
+    "retention_label": "How long to keep history",
+    "retention_forever": "Forever",
+    "retention_days": "{days} days",
+    "retention_hint": "Older analyses are deleted when the app starts. 'Forever' deletes nothing."
+  },
   "settings": {
     "title": "Settings",
     "provider_section": "LLM provider",

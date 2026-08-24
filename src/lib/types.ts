@@ -43,6 +43,13 @@ export interface Analysis {
   truncated: boolean;
 }
 
+export interface HistoryEntry {
+  id: string;
+  created_at: number;
+  preview: string;
+  claim_count: number;
+}
+
 export interface AnalyzeInput {
   question?: string;
   answer: string;
@@ -64,6 +71,8 @@ export interface Settings {
   theme: ThemePref;
   /** Ask for explicit confirmation before any text leaves the machine. */
   confirm_before_send: boolean;
+  /** Days to keep local analysis history. `null` keeps it forever. */
+  history_retention_days: number | null;
   /** How many factual claims to verify against the web. `null` means all. */
   verified_claims_limit: number | null;
 }
@@ -80,6 +89,10 @@ export interface LatestRelease {
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 export const DEFAULT_CLI_COMMAND = 'claude -p';
 export const DEFAULT_VERIFIED_CLAIMS_LIMIT = 8;
+export const DEFAULT_HISTORY_RETENTION_DAYS = 90;
+
+/** Selectable retention windows for the settings UI. `null` = keep forever. */
+export const HISTORY_RETENTION_OPTIONS: Array<number | null> = [7, 30, 90, 365, null];
 
 /** Selectable web-verification limits for the settings UI. `null` = all. */
 export const VERIFIED_CLAIMS_LIMIT_OPTIONS: Array<number | null> = [4, 8, 12, 16, 20, null];
@@ -101,6 +114,7 @@ export const DEFAULT_SETTINGS: Settings = {
   check_updates_on_launch: false,
   theme: 'auto',
   confirm_before_send: true,
+  history_retention_days: DEFAULT_HISTORY_RETENTION_DAYS,
   verified_claims_limit: DEFAULT_VERIFIED_CLAIMS_LIMIT,
 };
 

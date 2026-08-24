@@ -12,10 +12,11 @@
   import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   import { setLocale } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
-  import { t } from '$lib/stores/i18n.svelte';
+  import { t, tf } from '$lib/stores/i18n.svelte';
   import {
     ACCOUNT_ANTHROPIC,
     ACCOUNT_BRAVE,
+    HISTORY_RETENTION_OPTIONS,
     VERIFIED_CLAIMS_LIMIT_OPTIONS,
     type ApiAccount,
     type Settings,
@@ -223,6 +224,19 @@
       <span>{t('settings.confirm_before_send_label')}</span>
     </label>
     <small class="hint">{t('settings.confirm_before_send_hint')}</small>
+    <label>
+      <span>{t('history.retention_label')}</span>
+      <select bind:value={local.history_retention_days}>
+        {#each HISTORY_RETENTION_OPTIONS as option (option ?? 'forever')}
+          <option value={option}>
+            {option === null
+              ? t('history.retention_forever')
+              : tf('history.retention_days', { days: option })}
+          </option>
+        {/each}
+      </select>
+    </label>
+    <small class="hint">{t('history.retention_hint')}</small>
   </section>
 
   <section class="settings-grid glass">

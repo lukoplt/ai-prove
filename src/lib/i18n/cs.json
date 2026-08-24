@@ -110,6 +110,27 @@
     "finish": "Začít používat",
     "skip": "Přeskočit"
   },
+  "history": {
+    "title": "Historie",
+    "search_label": "Hledat v historii",
+    "search_placeholder": "Hledat v uložených analýzách…",
+    "empty": "Zatím tu nic není. Analýzy se sem ukládají automaticky.",
+    "empty_search": "Nic neodpovídá hledání.",
+    "loading": "Načítám…",
+    "claims": "{count} tvrzení",
+    "open": "Otevřít",
+    "delete": "Smazat",
+    "delete_confirm_title": "Smazat tuhle analýzu?",
+    "delete_confirm_body": "Záznam se z počítače smaže natrvalo.",
+    "clear_all": "Smazat celou historii",
+    "clear_confirm_title": "Smazat celou historii?",
+    "clear_confirm_body": "Všechny uložené analýzy se z počítače smažou natrvalo. Tohle nejde vrátit.",
+    "cleared": "Smazáno záznamů: {count}",
+    "retention_label": "Jak dlouho uchovávat historii",
+    "retention_forever": "Navždy",
+    "retention_days": "{days} dní",
+    "retention_hint": "Starší analýzy se při startu aplikace smažou. „Navždy“ nemaže nic."
+  },
   "settings": {
     "title": "Nastavení",
     "provider_section": "Poskytovatel LLM",

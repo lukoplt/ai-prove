@@ -98,6 +98,9 @@
     </div>
     <nav>
       <ThemeToggle />
+      <button type="button" onclick={() => goto(resolve('/history'))}>
+        {t('common.history')}
+      </button>
       <button type="button" onclick={() => goto(resolve('/settings'))}>
         {t('common.settings')}
       </button>
