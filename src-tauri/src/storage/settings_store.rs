@@ -60,6 +60,11 @@ pub struct Settings {
     #[serde(default)]
     pub theme: ThemePref,
 
+    /// Forces the high-contrast palette regardless of the OS setting: opaque
+    /// surfaces, no blur, no mesh background.
+    #[serde(default)]
+    pub high_contrast: bool,
+
     /// When true, the app asks for explicit confirmation before the first byte
     /// of the user's text leaves the process. Default on — the disclosure is
     /// the point of the app's privacy promise, so opting out must be deliberate.
@@ -113,6 +118,7 @@ impl Default for Settings {
             cli_command: DEFAULT_CLI_COMMAND.to_string(),
             check_updates_on_launch: false,
             theme: ThemePref::Auto,
+            high_contrast: false,
             confirm_before_send: true,
             history_retention_days: Some(DEFAULT_HISTORY_RETENTION_DAYS),
             verified_claims_limit: Some(DEFAULT_VERIFIED_CLAIMS_LIMIT),
@@ -469,6 +475,23 @@ mod tests {
             ..Settings::default()
         };
         assert!(settings.validate().is_err());
+    }
+
+    #[test]
+    fn high_contrast_defaults_to_false() {
+        assert!(!Settings::default().high_contrast);
+    }
+
+    #[test]
+    fn legacy_settings_without_high_contrast_default_to_false() {
+        let legacy = r#"{
+            "locale": "cs",
+            "hotkey": "CommandOrControl+Shift+D",
+            "cache_ttl_days": 7,
+            "onboarded": false
+        }"#;
+        let parsed: Settings = serde_json::from_str(legacy).unwrap();
+        assert!(!parsed.high_contrast);
     }
 
     #[test]

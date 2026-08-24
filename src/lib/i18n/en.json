@@ -1,4 +1,13 @@
 {
+  "a11y": {
+    "skip_to_content": "Skip to content",
+    "claims_group": "Extracted claims",
+    "status_region": "Analysis progress",
+    "sources_region": "Selected claim detail",
+    "drop_hint": "You can also drag and drop text into this field.",
+    "high_contrast_label": "High contrast",
+    "high_contrast_hint": "Turns off translucency and background blur. Also switches on automatically based on your system setting."
+  },
   "app": {
     "title": "PROVE",
     "tagline": "Prompt · Response · Output · Verification · Engine"

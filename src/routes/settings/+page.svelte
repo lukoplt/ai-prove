@@ -12,6 +12,7 @@
   import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   import { setLocale } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
+  import { theme } from '$lib/stores/theme.svelte';
   import { t, tf } from '$lib/stores/i18n.svelte';
   import {
     ACCOUNT_ANTHROPIC,
@@ -73,15 +74,26 @@
   }
 </script>
 
-<main class="page">
+<main id="main" class="page">
   <header class="glass">
     <button type="button" onclick={() => goto(resolve('/'))}>{t('settings.back')}</button>
     <h1>{t('settings.title')}</h1>
   </header>
 
-  <section class="glass">
+  <section class="settings-grid glass">
     <h2>{t('theme.label')}</h2>
-    <ThemeToggle />
+    <div class="inline-control">
+      <ThemeToggle />
+    </div>
+    <label class="check">
+      <input
+        type="checkbox"
+        bind:checked={local.high_contrast}
+        onchange={() => theme.setContrast(local.high_contrast)}
+      />
+      <span>{t('a11y.high_contrast_label')}</span>
+    </label>
+    <small class="hint">{t('a11y.high_contrast_hint')}</small>
   </section>
 
   {#if local.provider === 'anthropic'}
@@ -324,6 +336,11 @@
   .settings-grid {
     display: grid;
     gap: var(--space-3);
+  }
+
+  /* Grid items stretch by default; segmented controls should keep their size. */
+  .inline-control {
+    justify-self: start;
   }
 
   label {

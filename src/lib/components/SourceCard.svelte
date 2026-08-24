@@ -29,7 +29,9 @@
   {#if source.snippet}
     <p class="snippet">"{source.snippet}"</p>
   {/if}
-  <button type="button" onclick={open}>{t('source.open')}</button>
+  <button type="button" onclick={open} aria-label={`${t('source.open')}: ${source.title}`}>
+    {t('source.open')}
+  </button>
 </article>
 
 <style>

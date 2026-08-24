@@ -137,6 +137,7 @@
     title={t('history.delete_confirm_title')}
     confirmLabel={t('history.delete')}
     cancelLabel={t('common.cancel')}
+    destructive
     onConfirm={confirmDelete}
     onCancel={() => (pendingDelete = null)}
   >
@@ -148,6 +149,7 @@
     title={t('history.clear_confirm_title')}
     confirmLabel={t('history.clear_all')}
     cancelLabel={t('common.cancel')}
+    destructive
     onConfirm={confirmClearAll}
     onCancel={() => (confirmClear = false)}
   >

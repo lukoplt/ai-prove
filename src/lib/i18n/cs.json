@@ -1,4 +1,13 @@
 {
+  "a11y": {
+    "skip_to_content": "Přeskočit na obsah",
+    "claims_group": "Rozebraná tvrzení",
+    "status_region": "Průběh analýzy",
+    "sources_region": "Detail vybraného tvrzení",
+    "drop_hint": "Text můžeš do pole i přetáhnout myší.",
+    "high_contrast_label": "Vysoký kontrast",
+    "high_contrast_hint": "Vypne průhlednost a rozostření pozadí. Zapíná se i automaticky podle nastavení systému."
+  },
   "app": {
     "title": "PROVE",
     "tagline": "Prompt · Response · Output · Verification · Engine"

@@ -15,7 +15,7 @@
   } as const;
 </script>
 
-<div class="banner glass kind-{verdict.kind}">
+<div class="banner glass kind-{verdict.kind}" role="status">
   <span class="icon" aria-hidden="true">{ICONS[verdict.kind]}</span>
   <div class="text">
     <strong class="headline">{t(`verdict.${verdict.kind}`)}</strong>

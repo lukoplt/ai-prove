@@ -61,10 +61,12 @@
   class:dragging
   role="group"
   aria-label={t('input.placeholder')}
+  aria-describedby="paste-drop-hint"
   ondragover={onDragOver}
   ondragleave={onDragLeave}
   ondrop={onDrop}
 >
+  <p id="paste-drop-hint" class="sr-only">{t('a11y.drop_hint')}</p>
   <label>
     <span>{t('input.question_label')}</span>
     <textarea

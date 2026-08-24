@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import '../app.css';
   import Onboarding from '$lib/components/Onboarding.svelte';
-  import { setLocale } from '$lib/stores/i18n.svelte';
+  import { setLocale, t } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
   import { theme } from '$lib/stores/theme.svelte';
 
@@ -20,12 +20,13 @@
     bootLabel = nav?.toLowerCase().startsWith('cs') ? 'Spouštím…' : 'Loading…';
     await settings.load();
     setLocale(settings.current.locale);
-    theme.init(settings.current.theme);
+    theme.init(settings.current.theme, settings.current.high_contrast);
   });
 </script>
 
 {#if settings.loaded}
   <div class="app-mesh" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">{t('a11y.skip_to_content')}</a>
   {@render children()}
   {#if showOnboarding}
     <Onboarding onDone={() => (onboardingDone = true)} />

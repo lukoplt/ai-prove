@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { focusTrap } from '$lib/actions/focusTrap';
   import type { Snippet } from 'svelte';
 
   let {
@@ -7,6 +8,7 @@
     confirmLabel,
     cancelLabel,
     confirmDisabled = false,
+    destructive = false,
     onConfirm,
     onCancel,
     children,
@@ -16,57 +18,14 @@
     confirmLabel: string;
     cancelLabel: string;
     confirmDisabled?: boolean;
+    /** Styles the confirm action as destructive (permanent deletion). */
+    destructive?: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     children?: Snippet;
   } = $props();
 
   const titleId = `confirm-title-${Math.random().toString(36).slice(2, 9)}`;
-
-  const FOCUSABLE =
-    'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
-
-  let dialog = $state<HTMLDivElement | null>(null);
-  let restoreFocus: HTMLElement | null = null;
-
-  function focusable(): HTMLElement[] {
-    if (!dialog) return [];
-    return Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE));
-  }
-
-  // Focus the first control when the dialog opens and restore the previously
-  // focused element when it closes, so keyboard and screen-reader users land
-  // back where they were.
-  $effect(() => {
-    if (!open) return;
-
-    restoreFocus = document.activeElement as HTMLElement | null;
-    queueMicrotask(() => focusable()[0]?.focus());
-
-    return () => {
-      restoreFocus?.focus?.();
-      restoreFocus = null;
-    };
-  });
-
-  function onKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      onCancel();
-      return;
-    }
-
-    if (event.key !== 'Tab') return;
-
-    const items = focusable();
-    if (items.length === 0) return;
-
-    event.preventDefault();
-    const index = items.indexOf(document.activeElement as HTMLElement);
-    const delta = event.shiftKey ? -1 : 1;
-    const next = (index + delta + items.length) % items.length;
-    items[next].focus();
-  }
 </script>
 
 {#if open}
@@ -77,8 +36,7 @@
       aria-modal="true"
       aria-labelledby={titleId}
       tabindex="-1"
-      bind:this={dialog}
-      onkeydown={onKeydown}
+      use:focusTrap={{ onEscape: onCancel }}
     >
       <h2 id={titleId}>{title}</h2>
       <div class="body">
@@ -86,7 +44,13 @@
       </div>
       <div class="actions">
         <button type="button" onclick={onCancel}>{cancelLabel}</button>
-        <button type="button" class="primary" disabled={confirmDisabled} onclick={onConfirm}>
+        <button
+          type="button"
+          class="primary"
+          class:destructive
+          disabled={confirmDisabled}
+          onclick={onConfirm}
+        >
           {confirmLabel}
         </button>
       </div>
@@ -138,5 +102,16 @@
   .primary:hover:not(:disabled) {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
+  }
+
+  /* Permanent deletion reads as destructive, not as the happy path. */
+  .primary.destructive {
+    border-color: var(--bad);
+    background: var(--bad);
+  }
+  .primary.destructive:hover:not(:disabled) {
+    border-color: var(--bad);
+    background: var(--bad);
+    filter: brightness(0.92);
   }
 </style>

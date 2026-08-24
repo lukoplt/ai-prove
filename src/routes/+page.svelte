@@ -90,7 +90,7 @@
   });
 </script>
 
-<main class="page">
+<main id="main" class="page">
   <header class="topbar glass">
     <div class="brand">
       <h1>{t('app.title')}</h1>
@@ -119,7 +119,12 @@
 
   <PasteInput bind:question={questionText} bind:answer={answerText} onAnalyze={handleAnalyze} />
 
-  <section class="result">
+  <section
+    class="result"
+    aria-live="polite"
+    aria-busy={analysisStore.status === 'running'}
+    aria-label={t('a11y.status_region')}
+  >
     {#if analysisStore.status === 'running'}
       <div class="loading glass">
         <span class="spinner" aria-hidden="true"></span>

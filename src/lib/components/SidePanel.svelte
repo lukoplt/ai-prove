@@ -14,7 +14,7 @@
   }
 </script>
 
-<aside class="sp glass">
+<aside class="sp glass" aria-label={t('a11y.sources_region')}>
   {#if !claim}
     <div class="empty">
       <span class="empty-icon" aria-hidden="true">◎</span>
@@ -29,7 +29,7 @@
       <h3>{t('sidepanel.why_label')}</h3>
       <p>{claim.reason}</p>
     </section>
-    <section>
+    <section aria-live="polite">
       <h3>{t('sidepanel.sources_label')}</h3>
       {#if claim.kind !== 'fact'}
         <p class="muted">{t('verification.skipped_kind')}</p>

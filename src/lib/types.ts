@@ -69,6 +69,8 @@ export interface Settings {
   cli_command: string;
   check_updates_on_launch: boolean;
   theme: ThemePref;
+  /** Force the high-contrast palette regardless of the OS setting. */
+  high_contrast: boolean;
   /** Ask for explicit confirmation before any text leaves the machine. */
   confirm_before_send: boolean;
   /** Days to keep local analysis history. `null` keeps it forever. */
@@ -113,6 +115,7 @@ export const DEFAULT_SETTINGS: Settings = {
   cli_command: DEFAULT_CLI_COMMAND,
   check_updates_on_launch: false,
   theme: 'auto',
+  high_contrast: false,
   confirm_before_send: true,
   history_retention_days: DEFAULT_HISTORY_RETENTION_DAYS,
   verified_claims_limit: DEFAULT_VERIFIED_CLAIMS_LIMIT,

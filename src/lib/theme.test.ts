@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveTheme } from './theme';
+import { resolveContrast, resolveTheme } from './theme';
 
 describe('resolveTheme', () => {
   it('returns explicit light regardless of OS', () => {
@@ -15,5 +15,12 @@ describe('resolveTheme', () => {
   it('follows OS when auto', () => {
     expect(resolveTheme('auto', true)).toBe('dark');
     expect(resolveTheme('auto', false)).toBe('light');
+  });
+});
+
+describe('resolveContrast', () => {
+  it('maps the preference onto the data-contrast attribute', () => {
+    expect(resolveContrast(true)).toBe('more');
+    expect(resolveContrast(false)).toBe('normal');
   });
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { focusTrap } from '$lib/actions/focusTrap';
   import { setApiKey } from '$lib/api';
   import {
     CLI_PRESETS,
@@ -84,7 +85,13 @@
 </script>
 
 <div class="backdrop">
-  <div class="card glass" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+  <div
+    class="card glass"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="onboarding-title"
+    use:focusTrap
+  >
     <p class="progress">
       {tf('onboarding.step_of', { current: index + 1, total: ONBOARDING_STEPS.length })}
     </p>
