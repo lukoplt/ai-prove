@@ -181,7 +181,8 @@
     "saved": "Nastavení uloženo.",
     "privacy_section": "Soukromí",
     "confirm_before_send_label": "Před odesláním se zeptat",
-    "confirm_before_send_hint": "Před každou analýzou ukáže, co přesně a kam se odesílá. Vypnutím se analýza spustí hned."
+    "confirm_before_send_hint": "Před každou analýzou ukáže, co přesně a kam se odesílá. Vypnutím se analýza spustí hned.",
+    "privacy_link": "Jak PROVE nakládá s daty"
   },
   "updater": {
     "available": "K dispozici nová verze {version}",

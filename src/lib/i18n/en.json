@@ -181,7 +181,8 @@
     "saved": "Settings saved.",
     "privacy_section": "Privacy",
     "confirm_before_send_label": "Confirm before sending",
-    "confirm_before_send_hint": "Shows exactly what is sent and where before every analysis. Turning this off starts the analysis immediately."
+    "confirm_before_send_hint": "Shows exactly what is sent and where before every analysis. Turning this off starts the analysis immediately.",
+    "privacy_link": "How PROVE handles your data"
   },
   "updater": {
     "available": "Version {version} is available",

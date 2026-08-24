@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { clearApiKey, setApiKey } from '$lib/api';
+  import { clearApiKey, openInBrowser, setApiKey } from '$lib/api';
   import {
     CLI_PRESETS,
     commandToCliPreset,
@@ -22,6 +22,8 @@
     type ApiAccount,
     type Settings,
   } from '$lib/types';
+
+  const PRIVACY_DOC_URL = 'https://github.com/lukoplt/ai-prove/blob/main/docs/PRIVACY.md';
 
   let local: Settings = $state({ ...settings.current });
   let cliPreset: CliPresetId = $state(commandToCliPreset(local.cli_command));
@@ -249,6 +251,9 @@
       </select>
     </label>
     <small class="hint">{t('history.retention_hint')}</small>
+    <button type="button" class="link" onclick={() => openInBrowser(PRIVACY_DOC_URL)}>
+      {t('settings.privacy_link')}
+    </button>
   </section>
 
   <section class="settings-grid glass">
@@ -422,6 +427,21 @@
   .check input[type='checkbox'] {
     width: auto;
     margin: 0;
+  }
+
+  .link {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-size: 13px;
+    text-decoration: underline;
+  }
+
+  .link:hover {
+    border-color: transparent;
+    color: var(--accent-hover);
   }
 
   .hint {

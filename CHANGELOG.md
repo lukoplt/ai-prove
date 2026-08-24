@@ -3,6 +3,35 @@
 All notable changes to **PROVE** (Prompt · Response · Output · Verification · Engine).
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Pre-send confirmation.** Before any analysis starts, PROVE shows exactly what leaves your computer — which provider gets the text, whether web verification will run and for how many claims, and how many characters are involved. On by default; dismissible for one analysis or permanently in Settings → Privacy.
+- **First-run onboarding.** A four-step introduction covering what the app does, what leaves your machine, provider setup (including optional API keys), and the global hotkey.
+- **History view.** Analyses have been stored locally since 0.3.0 but nothing could read them — the backend wrote rows no UI ever queried. There is now a searchable list with per-entry open and delete, a "delete all" action, and a configurable retention window (default 90 days, pruned at launch).
+- **Hotkey remapping.** The global shortcut is now recorded by pressing the combination instead of typed as free text, is validated before saving, and takes effect immediately instead of at next launch.
+- **High-contrast mode.** Opt-in in Settings, and automatic under the OS "increase contrast" setting and Windows High Contrast — opaque surfaces, no blur, no mesh background.
+- **Privacy documentation.** `docs/PRIVACY.md` states exactly what is sent where, what is stored on disk and at which path, and how to delete all of it. Linked from Settings and the README.
+
+### Changed
+
+- **Errors say what to do.** Backend failures now carry a stable machine-readable code (`cli_not_found`, `llm_auth`, `search_rate_limit`, …) and the UI renders a localized explanation with a retry and, where relevant, a jump to the setting that fixes it. Raw diagnostics stay available behind a disclosure instead of being the whole message. This replaces the blocking `alert()` on the pre-analysis check.
+- **Accessibility.** Claims are real buttons carrying screen-reader labels that name the classification and the verification verdict, arrow keys move between them, results and verdicts announce as they stream in, and there is a skip link and landmark structure. Every text/background token pair now meets WCAG AA — enforced by `src/lib/contrast.test.ts`, which fails the build if a colour regresses.
+- **Claim highlights no longer rely on colour alone.** Each classification also carries a distinct underline.
+- Confirmation dialogs trap focus, close on Escape, and restore focus to where the user was.
+- Destructive confirmations (deleting an analysis, clearing history) are styled as destructive rather than as the default action.
+
+### Fixed
+
+- Saving a hotkey that another application already owns no longer silently persists a dead shortcut: the re-registration runs before the write, so the failure surfaces and the previous working shortcut is kept.
+
+### Internal
+
+- The CLI provider — the default LLM path since it landed after M2 — was never recorded in the plan documents. It now appears in the overview's cross-cutting decisions and spec-coverage tables, with tests covering PATH discovery, absolute-path resolution, JSON repair, error classification, and per-provider prompt selection.
+- Frontend settings defaults are defined once in `src/lib/types.ts` instead of being duplicated across the store, the browser-preview fallback, and every test fixture.
+- New test suite: i18n key/placeholder parity between `cs.json` and `en.json`.
+
 ## [0.4.4] — 2026-06-09
 
 ### Security

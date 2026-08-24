@@ -26,7 +26,10 @@ LLMs sound confident even when they're wrong. PROVE doesn't trust the model — 
 - **Source tiering.** Domains scored A/B/C/D (Wikipedia & gov → A; major outlets → B; long tail → C; social/spam → D). Tier-aware aggregation: a Wikipedia "supports" outweighs a Reddit "contradicts".
 - **Streaming UI.** Color-coded claim highlights appear as soon as classification completes; verification fills in per-claim asynchronously.
 - **Local cache.** SQLite-backed verification cache keyed by claim hash (TTL configurable, default 7 days).
-- **Privacy by design.** All settings local. API keys in OS keychain. Optional opt-in update check (default off).
+- **Privacy by design.** All settings local. API keys in OS keychain. Optional opt-in update check (default off). A pre-send confirmation shows exactly what leaves your machine before every analysis.
+- **Local history.** Every analysis is saved locally, searchable, individually deletable, with a configurable retention window (default 90 days).
+- **Remappable global hotkey.** Record a combination in Settings; it re-registers immediately.
+- **Accessible.** Claims are real buttons with screen-reader labels naming the classification and verdict, results announce as they stream in, and every colour pair meets WCAG AA. High-contrast mode is available in Settings and follows the OS setting automatically.
 - **Czech-first, English ready.** Full bilingual UI, system-locale auto-detect on first launch.
 
 ---
@@ -42,7 +45,7 @@ LLMs sound confident even when they're wrong. PROVE doesn't trust the model — 
    - **macOS 14 / 15:** right-click (or Ctrl-click) `PROVE.app` in Finder → **Open** → confirm.
    - After the first allow, normal launch works.
 
-> The current build is adhoc-signed (no Apple Developer ID). Production signing + notarization is on the roadmap.
+> The current build is adhoc-signed (no Apple Developer ID). What production signing and notarization would require is written up in **[docs/distribution/CODE-SIGNING.md](docs/distribution/CODE-SIGNING.md)**.
 
 ### Windows
 
@@ -53,7 +56,7 @@ LLMs sound confident even when they're wrong. PROVE doesn't trust the model — 
    - To preempt the block: **Windows Security → Virus & threat protection → Manage settings → Add or remove exclusions → File** and add the downloaded installer.
 3. Double-click the installer and follow the wizard. SmartScreen may still warn about an unrecognized publisher — click **More info → Run anyway**.
 
-> Production code-signing (EV cert) is on the roadmap. Until then, the warnings above are expected on every clean Windows install.
+> Production code-signing is not in place yet, so the warnings above are expected on every clean Windows install. The certificate options and their SmartScreen trade-offs are laid out in **[docs/distribution/CODE-SIGNING.md](docs/distribution/CODE-SIGNING.md)**.
 
 ---
 
@@ -109,6 +112,10 @@ Caps: max 25 claims per analysis, max 8 fact-claims verified per analysis. Confi
 - **Update check** is opt-in (default off). When enabled, makes exactly one anonymous GET to the GitHub Releases API on launch. No app data is sent.
 - **LLM traffic** only goes where you point it. Local CLI → stays on the box. Anthropic API → goes to `api.anthropic.com` directly from your machine.
 - **Brave Search** is the only required outbound call for verification, and only when you provide a key.
+- **You are asked first.** Before every analysis, PROVE lists the destination, whether web verification will run, and the payload size. Toggle it off in Settings → Privacy.
+
+Full detail — exactly what is sent where, what is stored on disk and at which
+path, and how to delete all of it — is in **[docs/PRIVACY.md](docs/PRIVACY.md)**.
 
 ---
 
@@ -175,7 +182,7 @@ Code is organized so that adding a new LLM provider means implementing a single 
 - Multiple search providers (DuckDuckGo, Tavily)
 - Conversational mode (analyze multi-turn dialogs)
 - Citation back-export (copy "you said X but source Y disagrees" to clipboard)
-- History view with full-text search
+- Full-text search across claim text in history (today's search matches the analysed input)
 - Browser extension companion (auto-capture from ChatGPT / Claude / Gemini)
 
 ---
