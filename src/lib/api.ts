@@ -1,9 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 import {
-  DEFAULT_ANTHROPIC_MODEL,
-  DEFAULT_CLI_COMMAND,
-  DEFAULT_VERIFIED_CLAIMS_LIMIT,
+  DEFAULT_SETTINGS,
   type AnalyzeInput,
   type Analysis,
   type ApiAccount,
@@ -25,16 +23,8 @@ export function isTauriRuntime(): boolean {
 function browserDefaultSettings(): Settings {
   const language = typeof navigator === 'undefined' ? 'en' : navigator.language;
   return {
+    ...DEFAULT_SETTINGS,
     locale: language.toLowerCase().startsWith('cs') ? 'cs' : 'en',
-    hotkey: 'CommandOrControl+Shift+D',
-    cache_ttl_days: 7,
-    onboarded: false,
-    provider: 'cli',
-    anthropic_model: DEFAULT_ANTHROPIC_MODEL,
-    cli_command: DEFAULT_CLI_COMMAND,
-    check_updates_on_launch: false,
-    theme: 'auto',
-    verified_claims_limit: DEFAULT_VERIFIED_CLAIMS_LIMIT,
   };
 }
 

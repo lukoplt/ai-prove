@@ -216,6 +216,15 @@
   </section>
 
   <section class="settings-grid glass">
+    <h2>{t('settings.privacy_section')}</h2>
+    <label class="check">
+      <input type="checkbox" bind:checked={local.confirm_before_send} />
+      <span>{t('settings.confirm_before_send_label')}</span>
+    </label>
+    <small class="hint">{t('settings.confirm_before_send_hint')}</small>
+  </section>
+
+  <section class="settings-grid glass">
     <h2>{t('settings.updates_section')}</h2>
     <label class="check">
       <input type="checkbox" bind:checked={local.check_updates_on_launch} />

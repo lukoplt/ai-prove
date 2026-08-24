@@ -56,12 +56,22 @@ pub struct Settings {
     #[serde(default)]
     pub theme: ThemePref,
 
+    /// When true, the app asks for explicit confirmation before the first byte
+    /// of the user's text leaves the process. Default on — the disclosure is
+    /// the point of the app's privacy promise, so opting out must be deliberate.
+    #[serde(default = "default_true")]
+    pub confirm_before_send: bool,
+
     /// How many factual claims are verified against the web per analysis.
     /// `None` means "all" — every factual claim is verified (up to the
     /// atomization cap of `MAX_CLAIMS`). `Some(n)` verifies only the first `n`
     /// factual claims; the rest are marked `NotVerified`. Default `Some(8)`.
     #[serde(default = "default_verified_claims_limit")]
     pub verified_claims_limit: Option<u32>,
+}
+
+const fn default_true() -> bool {
+    true
 }
 
 fn default_anthropic_model() -> String {
@@ -89,6 +99,7 @@ impl Default for Settings {
             cli_command: DEFAULT_CLI_COMMAND.to_string(),
             check_updates_on_launch: false,
             theme: ThemePref::Auto,
+            confirm_before_send: true,
             verified_claims_limit: Some(DEFAULT_VERIFIED_CLAIMS_LIMIT),
         }
     }
@@ -357,6 +368,34 @@ mod tests {
             let back: Settings = serde_json::from_str(&json).unwrap();
             assert_eq!(back.verified_claims_limit, limit);
         }
+    }
+
+    #[test]
+    fn confirm_before_send_defaults_to_true() {
+        assert!(Settings::default().confirm_before_send);
+    }
+
+    #[test]
+    fn legacy_settings_without_confirm_flag_default_to_true() {
+        let legacy = r#"{
+            "locale": "cs",
+            "hotkey": "CommandOrControl+Shift+D",
+            "cache_ttl_days": 7,
+            "onboarded": false
+        }"#;
+        let parsed: Settings = serde_json::from_str(legacy).unwrap();
+        assert!(parsed.confirm_before_send);
+    }
+
+    #[test]
+    fn confirm_before_send_roundtrips_json() {
+        let settings = Settings {
+            confirm_before_send: false,
+            ..Settings::default()
+        };
+        let json = serde_json::to_string(&settings).unwrap();
+        let back: Settings = serde_json::from_str(&json).unwrap();
+        assert!(!back.confirm_before_send);
     }
 
     #[test]

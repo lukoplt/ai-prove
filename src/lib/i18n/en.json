@@ -75,6 +75,19 @@
     "light": "Light",
     "dark": "Dark"
   },
+  "send": {
+    "title": "Send for analysis?",
+    "intro": "Before the analysis starts, this leaves your computer:",
+    "dest_cli": "The text goes to the local process \"{command}\". It does not leave your computer — where that tool sends it is up to its own configuration.",
+    "dest_anthropic": "The text goes to api.anthropic.com, model {model}.",
+    "web_on": "The first {limit} factual claims are sent as search queries to api.search.brave.com.",
+    "web_on_all": "Every factual claim is sent as a search query to api.search.brave.com.",
+    "web_off": "Nothing goes to the web — no Brave Search API key is stored.",
+    "payload": "Question: {questionChars} characters · Answer: {answerChars} characters.",
+    "dont_ask": "Don't ask again",
+    "confirm": "Send and analyze",
+    "cancel": "Cancel"
+  },
   "settings": {
     "title": "Settings",
     "provider_section": "LLM provider",
@@ -113,7 +126,10 @@
     "check_updates_label": "Check for updates on launch",
     "check_updates_hint": "When enabled, the app makes one GET request to GitHub on launch to see if a newer version exists. No data is sent and no download or install happens automatically.",
     "back": "Back",
-    "saved": "Settings saved."
+    "saved": "Settings saved.",
+    "privacy_section": "Privacy",
+    "confirm_before_send_label": "Confirm before sending",
+    "confirm_before_send_hint": "Shows exactly what is sent and where before every analysis. Turning this off starts the analysis immediately."
   },
   "updater": {
     "available": "Version {version} is available",

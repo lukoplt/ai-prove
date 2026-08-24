@@ -62,6 +62,8 @@ export interface Settings {
   cli_command: string;
   check_updates_on_launch: boolean;
   theme: ThemePref;
+  /** Ask for explicit confirmation before any text leaves the machine. */
+  confirm_before_send: boolean;
   /** How many factual claims to verify against the web. `null` means all. */
   verified_claims_limit: number | null;
 }
@@ -81,6 +83,26 @@ export const DEFAULT_VERIFIED_CLAIMS_LIMIT = 8;
 
 /** Selectable web-verification limits for the settings UI. `null` = all. */
 export const VERIFIED_CLAIMS_LIMIT_OPTIONS: Array<number | null> = [4, 8, 12, 16, 20, null];
+
+/**
+ * Canonical frontend defaults, mirroring `Settings::default()` in
+ * `src-tauri/src/storage/settings_store.rs`. The store, the browser-preview
+ * fallback, and test fixtures all build on this so a new field only has to be
+ * added in one place.
+ */
+export const DEFAULT_SETTINGS: Settings = {
+  locale: 'cs',
+  hotkey: 'CommandOrControl+Shift+D',
+  cache_ttl_days: 7,
+  onboarded: false,
+  provider: 'cli',
+  anthropic_model: DEFAULT_ANTHROPIC_MODEL,
+  cli_command: DEFAULT_CLI_COMMAND,
+  check_updates_on_launch: false,
+  theme: 'auto',
+  confirm_before_send: true,
+  verified_claims_limit: DEFAULT_VERIFIED_CLAIMS_LIMIT,
+};
 
 export const ACCOUNT_ANTHROPIC = 'anthropic';
 export const ACCOUNT_BRAVE = 'brave';

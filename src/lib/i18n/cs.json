@@ -75,6 +75,19 @@
     "light": "Světlý",
     "dark": "Tmavý"
   },
+  "send": {
+    "title": "Odeslat k analýze?",
+    "intro": "Než začne analýza, tohle opustí tvůj počítač:",
+    "dest_cli": "Text jde do lokálního procesu „{command}“. Neopouští tvůj počítač — kam ho pošle sám nástroj, závisí na jeho nastavení.",
+    "dest_anthropic": "Text jde na api.anthropic.com, model {model}.",
+    "web_on": "Prvních {limit} faktických tvrzení se pošle jako vyhledávací dotazy na api.search.brave.com.",
+    "web_on_all": "Každé faktické tvrzení se pošle jako vyhledávací dotaz na api.search.brave.com.",
+    "web_off": "Na web se nic neposílá — Brave Search API klíč není uložený.",
+    "payload": "Dotaz: {questionChars} znaků · Odpověď: {answerChars} znaků.",
+    "dont_ask": "Příště se neptat",
+    "confirm": "Odeslat a analyzovat",
+    "cancel": "Zrušit"
+  },
   "settings": {
     "title": "Nastavení",
     "provider_section": "Poskytovatel LLM",
@@ -113,7 +126,10 @@
     "check_updates_label": "Hledat aktualizace při startu",
     "check_updates_hint": "Při zapnutí appka při startu jednou pošle GET na GitHub API a zjistí, zda existuje novější verze. Žádná data se neodesílají a žádné stahování ani instalace neproběhne automaticky.",
     "back": "Zpět",
-    "saved": "Nastavení uloženo."
+    "saved": "Nastavení uloženo.",
+    "privacy_section": "Soukromí",
+    "confirm_before_send_label": "Před odesláním se zeptat",
+    "confirm_before_send_hint": "Před každou analýzou ukáže, co přesně a kam se odesílá. Vypnutím se analýza spustí hned."
   },
   "updater": {
     "available": "K dispozici nová verze {version}",

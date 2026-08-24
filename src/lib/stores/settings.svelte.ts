@@ -1,27 +1,7 @@
 import { getSettings, hasApiKey, setSettings } from '$lib/api';
-import {
-  ACCOUNT_ANTHROPIC,
-  ACCOUNT_BRAVE,
-  DEFAULT_ANTHROPIC_MODEL,
-  DEFAULT_CLI_COMMAND,
-  DEFAULT_VERIFIED_CLAIMS_LIMIT,
-  type Settings,
-} from '$lib/types';
+import { ACCOUNT_ANTHROPIC, ACCOUNT_BRAVE, DEFAULT_SETTINGS, type Settings } from '$lib/types';
 
-const defaults: Settings = {
-  locale: 'cs',
-  hotkey: 'CommandOrControl+Shift+D',
-  cache_ttl_days: 7,
-  onboarded: false,
-  provider: 'cli',
-  anthropic_model: DEFAULT_ANTHROPIC_MODEL,
-  cli_command: DEFAULT_CLI_COMMAND,
-  check_updates_on_launch: false,
-  theme: 'auto',
-  verified_claims_limit: DEFAULT_VERIFIED_CLAIMS_LIMIT,
-};
-
-let current = $state<Settings>(defaults);
+let current = $state<Settings>(DEFAULT_SETTINGS);
 let anthropicPresent = $state(false);
 let bravePresent = $state(false);
 let loaded = $state(false);

@@ -4,8 +4,10 @@
   import { onMount } from 'svelte';
   import { isTauriRuntime, readClipboardText } from '$lib/api';
   import ClaimText from '$lib/components/ClaimText.svelte';
+  import ConfirmModal from '$lib/components/ConfirmModal.svelte';
   import ErrorState from '$lib/components/ErrorState.svelte';
   import PasteInput from '$lib/components/PasteInput.svelte';
+  import SendConfirm from '$lib/components/SendConfirm.svelte';
   import SidePanel from '$lib/components/SidePanel.svelte';
   import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   import UpdateBanner from '$lib/components/UpdateBanner.svelte';
@@ -20,6 +22,8 @@
   let questionText = $state('');
   let answerText = $state('');
   let preflight = $state<AppErrorPayload | null>(null);
+  let pendingInput = $state<AnalyzeInput | null>(null);
+  let dontAskAgain = $state(false);
 
   function preflightError(): string | null {
     return analysisPreflightError({
@@ -42,6 +46,24 @@
     }
 
     preflight = null;
+    if (settings.current.confirm_before_send) {
+      pendingInput = input;
+      return;
+    }
+
+    await start(input);
+  }
+
+  async function confirmSend() {
+    const input = pendingInput;
+    pendingInput = null;
+    if (!input) return;
+
+    if (dontAskAgain) {
+      await settings.save({ ...settings.current, confirm_before_send: false });
+      dontAskAgain = false;
+    }
+
     await start(input);
   }
 
@@ -136,6 +158,24 @@
   </section>
 
   <footer class="disclaimer">{t('footer.disclaimer')}</footer>
+
+  <ConfirmModal
+    open={pendingInput !== null}
+    title={t('send.title')}
+    confirmLabel={t('send.confirm')}
+    cancelLabel={t('send.cancel')}
+    onConfirm={confirmSend}
+    onCancel={() => {
+      pendingInput = null;
+      dontAskAgain = false;
+    }}
+  >
+    <SendConfirm
+      question={pendingInput?.question ?? ''}
+      answer={pendingInput?.answer ?? ''}
+      bind:dontAsk={dontAskAgain}
+    />
+  </ConfirmModal>
 </main>
 
 <style>
