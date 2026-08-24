@@ -88,6 +88,28 @@
     "confirm": "Odeslat a analyzovat",
     "cancel": "Zrušit"
   },
+  "onboarding": {
+    "step_of": "Krok {current} ze {total}",
+    "welcome_title": "Vítej v PROVE",
+    "welcome_body": "Vlož odpověď od AI. PROVE ji rozloží na jednotlivá tvrzení, u každého řekne, jestli jde o ověřitelný fakt, odvození, domněnku nebo vnitřní rozpor, a faktická tvrzení zkusí ověřit proti webu.",
+    "welcome_note": "PROVE není arbitr pravdy. Ukazuje ti, co se dá ověřit a čím — rozhodnutí zůstává na tobě.",
+    "privacy_title": "Co odchází z počítače",
+    "privacy_local": "Analýzy, nastavení i cache zůstávají v datové složce aplikace na tvém disku. Žádná telemetrie, žádné odesílání dat nám.",
+    "privacy_llm": "Text jde tomu poskytovateli LLM, kterého si vybereš v dalším kroku — buď lokálnímu CLI nástroji, nebo do Anthropic API.",
+    "privacy_web": "Pokud uložíš Brave Search API klíč, posílají se jednotlivá faktická tvrzení jako vyhledávací dotazy. Bez klíče se na web neposílá nic.",
+    "privacy_keys": "API klíče se ukládají do systémové klíčenky, ne do souboru s nastavením.",
+    "privacy_confirm": "Před každou analýzou uvidíš přesný souhrn a musíš ho potvrdit. Tohle jde vypnout v Nastavení.",
+    "provider_title": "Vyber, jak volat LLM",
+    "provider_body": "Doporučená volba je lokální CLI nástroj, který už na počítači máš — pak neplatíš nic navíc a text neposílá aplikace nikam sama.",
+    "brave_optional": "Brave Search API klíč (volitelný, pro ověřování proti webu)",
+    "ready_title": "Hotovo",
+    "ready_hotkey": "Kdekoli v systému stiskni {hotkey} — PROVE se otevře a předvyplní text ze schránky.",
+    "ready_body": "Zkratku, jazyk i rozsah ověřování změníš kdykoli v Nastavení.",
+    "back": "Zpět",
+    "next": "Pokračovat",
+    "finish": "Začít používat",
+    "skip": "Přeskočit"
+  },
   "settings": {
     "title": "Nastavení",
     "provider_section": "Poskytovatel LLM",

@@ -88,6 +88,28 @@
     "confirm": "Send and analyze",
     "cancel": "Cancel"
   },
+  "onboarding": {
+    "step_of": "Step {current} of {total}",
+    "welcome_title": "Welcome to PROVE",
+    "welcome_body": "Paste an AI answer. PROVE breaks it into individual claims, labels each one as a verifiable fact, an inference, an opinion, or an internal contradiction, and tries to check the factual ones against the web.",
+    "welcome_note": "PROVE is not an arbiter of truth. It shows you what can be checked and with what — the judgment stays yours.",
+    "privacy_title": "What leaves your computer",
+    "privacy_local": "Analyses, settings, and the cache stay in the app's data folder on your disk. No telemetry, nothing sent to us.",
+    "privacy_llm": "The text goes to whichever LLM provider you pick in the next step — either a local CLI tool or the Anthropic API.",
+    "privacy_web": "If you store a Brave Search API key, individual factual claims are sent as search queries. Without a key, nothing goes to the web.",
+    "privacy_keys": "API keys are stored in the system keychain, not in the settings file.",
+    "privacy_confirm": "Before every analysis you see an exact summary and have to confirm it. This can be turned off in Settings.",
+    "provider_title": "Choose how to call the LLM",
+    "provider_body": "The recommended option is a local CLI tool you already have — nothing extra to pay for, and the app itself sends the text nowhere.",
+    "brave_optional": "Brave Search API key (optional, for web verification)",
+    "ready_title": "You're set",
+    "ready_hotkey": "Press {hotkey} anywhere in the system — PROVE opens and pre-fills from your clipboard.",
+    "ready_body": "The hotkey, language, and verification depth are all changeable in Settings.",
+    "back": "Back",
+    "next": "Continue",
+    "finish": "Start using PROVE",
+    "skip": "Skip"
+  },
   "settings": {
     "title": "Settings",
     "provider_section": "LLM provider",
