@@ -10,6 +10,10 @@ pub const DEFAULT_CLI_COMMAND: &str = "claude -p";
 /// Default number of factual claims verified against the web per analysis.
 pub const DEFAULT_VERIFIED_CLAIMS_LIMIT: u32 = 8;
 
+/// Default history retention. `None` in `Settings` means "keep forever".
+pub const DEFAULT_HISTORY_RETENTION_DAYS: u32 = 90;
+pub const MAX_HISTORY_RETENTION_DAYS: u32 = 3650;
+
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ProviderKind {
@@ -62,6 +66,11 @@ pub struct Settings {
     #[serde(default = "default_true")]
     pub confirm_before_send: bool,
 
+    /// How long analyses stay in the local history, in days. `None` keeps them
+    /// forever. Pruned once at startup.
+    #[serde(default = "default_history_retention_days")]
+    pub history_retention_days: Option<u32>,
+
     /// How many factual claims are verified against the web per analysis.
     /// `None` means "all" — every factual claim is verified (up to the
     /// atomization cap of `MAX_CLAIMS`). `Some(n)` verifies only the first `n`
@@ -83,6 +92,11 @@ fn default_cli_command() -> String {
 }
 
 #[allow(clippy::unnecessary_wraps)] // serde default for an `Option<u32>` field
+fn default_history_retention_days() -> Option<u32> {
+    Some(DEFAULT_HISTORY_RETENTION_DAYS)
+}
+
+#[allow(clippy::unnecessary_wraps)] // serde default for an `Option<u32>` field
 fn default_verified_claims_limit() -> Option<u32> {
     Some(DEFAULT_VERIFIED_CLAIMS_LIMIT)
 }
@@ -100,6 +114,7 @@ impl Default for Settings {
             check_updates_on_launch: false,
             theme: ThemePref::Auto,
             confirm_before_send: true,
+            history_retention_days: Some(DEFAULT_HISTORY_RETENTION_DAYS),
             verified_claims_limit: Some(DEFAULT_VERIFIED_CLAIMS_LIMIT),
         }
     }
@@ -147,6 +162,14 @@ impl Settings {
 
         if self.hotkey.trim().is_empty() {
             return Err(AppError::Invalid("hotkey cannot be empty".into()));
+        }
+
+        if let Some(days) = self.history_retention_days {
+            if days == 0 || days > MAX_HISTORY_RETENTION_DAYS {
+                return Err(AppError::Invalid(format!(
+                    "history_retention_days out of range (1..={MAX_HISTORY_RETENTION_DAYS} or null to keep forever), got {days}"
+                )));
+            }
         }
 
         if let Some(limit) = self.verified_claims_limit {
@@ -396,6 +419,56 @@ mod tests {
         let json = serde_json::to_string(&settings).unwrap();
         let back: Settings = serde_json::from_str(&json).unwrap();
         assert!(!back.confirm_before_send);
+    }
+
+    #[test]
+    fn history_retention_defaults_to_ninety_days() {
+        assert_eq!(
+            Settings::default().history_retention_days,
+            Some(DEFAULT_HISTORY_RETENTION_DAYS)
+        );
+    }
+
+    #[test]
+    fn legacy_settings_without_retention_default_to_ninety_days() {
+        let legacy = r#"{
+            "locale": "cs",
+            "hotkey": "CommandOrControl+Shift+D",
+            "cache_ttl_days": 7,
+            "onboarded": false
+        }"#;
+        let parsed: Settings = serde_json::from_str(legacy).unwrap();
+        assert_eq!(
+            parsed.history_retention_days,
+            Some(DEFAULT_HISTORY_RETENTION_DAYS)
+        );
+    }
+
+    #[test]
+    fn history_retention_forever_validates() {
+        let settings = Settings {
+            history_retention_days: None,
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_ok());
+    }
+
+    #[test]
+    fn history_retention_zero_rejected() {
+        let settings = Settings {
+            history_retention_days: Some(0),
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_err());
+    }
+
+    #[test]
+    fn history_retention_over_ten_years_rejected() {
+        let settings = Settings {
+            history_retention_days: Some(MAX_HISTORY_RETENTION_DAYS + 1),
+            ..Settings::default()
+        };
+        assert!(settings.validate().is_err());
     }
 
     #[test]

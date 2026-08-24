@@ -9,6 +9,7 @@ pub mod storage;
 pub mod tray;
 
 use commands::analysis::analyze_text;
+use commands::history::{clear_history, delete_analysis, get_analysis, list_history};
 use commands::settings::{clear_api_key, get_settings, has_api_key, set_api_key, set_settings};
 use commands::updates::check_latest_release;
 pub use error::{AppError, AppResult};
@@ -42,6 +43,10 @@ pub fn run() {
             has_api_key,
             analyze_text,
             check_latest_release,
+            list_history,
+            get_analysis,
+            delete_analysis,
+            clear_history,
         ])
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {
@@ -60,7 +65,22 @@ pub fn run() {
                 .unwrap_or_else(Settings::with_system_locale);
 
             let data_dir = app.path().app_data_dir()?;
-            app.manage(Db::open(data_dir.join("cache.db"))?);
+            let db = Db::open(data_dir.join("cache.db"))?;
+
+            // Enforce the retention window once per launch, before anything can
+            // read history — deleting is the user's privacy expectation, not a
+            // background nicety, so a failure is logged rather than swallowed.
+            if let Some(days) = settings.history_retention_days {
+                let cutoff =
+                    chrono::Utc::now().timestamp_millis() - i64::from(days) * 24 * 3_600 * 1_000;
+                match storage::history::prune(&db, cutoff) {
+                    Ok(0) => {}
+                    Ok(removed) => tracing::info!("pruned {removed} history entries"),
+                    Err(error) => tracing::warn!("history prune failed: {error}"),
+                }
+            }
+
+            app.manage(db);
             hotkey::install(&app.handle().clone(), &settings.hotkey)?;
             tray::install(&app.handle().clone(), &settings.locale)?;
             Ok(())
