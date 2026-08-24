@@ -31,6 +31,10 @@ pub enum ThemePref {
     Dark,
 }
 
+// A settings DTO is exactly the place for independent boolean flags: each one
+// is a separate user preference with its own JSON key, and folding them into
+// two-variant enums would change the wire format the frontend reads for no gain.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Settings {
     pub locale: String,

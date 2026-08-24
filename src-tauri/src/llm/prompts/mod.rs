@@ -76,6 +76,40 @@ mod tests {
     }
 
     #[test]
+    fn cli_and_anthropic_prompts_differ_per_stage() {
+        for locale in ["cs", "en"] {
+            assert_ne!(
+                atomize_prompt(locale, ProviderKind::Cli),
+                atomize_prompt(locale, ProviderKind::Anthropic),
+                "{locale} atomize prompts must differ per provider"
+            );
+            assert_ne!(
+                judge_prompt(locale, ProviderKind::Cli),
+                judge_prompt(locale, ProviderKind::Anthropic),
+                "{locale} judge prompts must differ per provider"
+            );
+        }
+    }
+
+    #[test]
+    fn judge_prompt_unknown_locale_falls_back_to_en() {
+        for provider in [ProviderKind::Anthropic, ProviderKind::Cli] {
+            assert_eq!(judge_prompt("de", provider), judge_prompt("en", provider));
+        }
+    }
+
+    #[test]
+    fn cs_and_en_variants_differ_per_provider() {
+        for provider in [ProviderKind::Anthropic, ProviderKind::Cli] {
+            assert_ne!(
+                atomize_prompt("cs", provider),
+                atomize_prompt("en", provider)
+            );
+            assert_ne!(judge_prompt("cs", provider), judge_prompt("en", provider));
+        }
+    }
+
+    #[test]
     fn judge_prompt_non_empty_for_all_combos() {
         for provider in [ProviderKind::Anthropic, ProviderKind::Cli] {
             for locale in ["cs", "en"] {

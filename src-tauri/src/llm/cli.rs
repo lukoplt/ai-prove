@@ -527,6 +527,86 @@ mod tests {
         assert_eq!(provider.command[2], "you are helpful");
     }
 
+    #[test]
+    fn build_cli_path_prefers_inherited_then_user_then_fallback_dirs() {
+        let home = PathBuf::from("/home/tester");
+        let path = build_cli_path(Some(&home), Some(OsStr::new("/inherited/bin")));
+        let dirs: Vec<PathBuf> = env::split_paths(&path).collect();
+
+        assert_eq!(dirs[0], PathBuf::from("/inherited/bin"));
+        assert!(dirs.contains(&home.join(".local/bin")));
+        assert!(dirs.contains(&PathBuf::from("/opt/homebrew/bin")));
+    }
+
+    #[test]
+    fn build_cli_path_deduplicates_repeated_dirs() {
+        let path = build_cli_path(None, Some(OsStr::new("/usr/bin:/usr/bin:/bin")));
+        let dirs: Vec<PathBuf> = env::split_paths(&path).collect();
+        let usr_bin = dirs
+            .iter()
+            .filter(|dir| *dir == &PathBuf::from("/usr/bin"))
+            .count();
+
+        assert_eq!(usr_bin, 1);
+    }
+
+    #[test]
+    fn build_cli_path_skips_empty_entries() {
+        let path = build_cli_path(None, Some(OsStr::new("")));
+        let dirs: Vec<PathBuf> = env::split_paths(&path).collect();
+        assert!(dirs.iter().all(|dir| !dir.as_os_str().is_empty()));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn resolve_program_accepts_an_absolute_path() {
+        assert_eq!(
+            resolve_program("/bin/sh", OsStr::new("/nowhere")).unwrap(),
+            PathBuf::from("/bin/sh")
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn resolve_program_rejects_an_absolute_path_that_is_not_executable() {
+        assert!(resolve_program("/etc/hosts", OsStr::new("/nowhere")).is_none());
+    }
+
+    #[test]
+    fn repair_leaves_valid_json_untouched() {
+        let json = r#"{"a":"b","c":[1,2]}"#;
+        assert_eq!(repair_unescaped_string_quotes(json), json);
+    }
+
+    #[test]
+    fn repair_escapes_only_quotes_that_do_not_close_a_string() {
+        let broken = r#"{"text":"say "hi" now","kind":"fact"}"#;
+        let repaired = repair_unescaped_string_quotes(broken);
+        let parsed: serde_json::Value = serde_json::from_str(&repaired).unwrap();
+        assert_eq!(parsed["text"], r#"say "hi" now"#);
+        assert_eq!(parsed["kind"], "fact");
+    }
+
+    #[test]
+    fn extract_jsonish_recovers_when_a_stray_quote_unbalances_the_scan() {
+        // `extract_json_object` treats the stray quote as opening a string; the
+        // looser fallback is what keeps such output usable.
+        let text = r#"prefix {"text":"a " b","kind":"fact"} suffix"#;
+        assert!(extract_jsonish_object(text).is_some());
+    }
+
+    #[tokio::test]
+    async fn cli_judge_rejects_an_unknown_stance() {
+        let canned = r#"{"stance":"maybe","quote":"q"}"#;
+        let cmd = format!(
+            r#"sh -c 'cat >/dev/null; printf %s "{}"'"#,
+            canned.replace('"', r#"\""#)
+        );
+        let provider = CliProvider::new(&cmd, "en".into()).unwrap();
+        let error = provider.judge("claim", "src").await.unwrap_err();
+        assert_eq!(error.code(), ErrorCode::CliBadOutput);
+    }
+
     #[cfg(unix)]
     #[test]
     fn resolve_program_finds_home_local_bin_when_inherited_path_is_gui_default() {
