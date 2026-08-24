@@ -4,7 +4,7 @@
 
 **Goal:** Turn the working MVP Core into a shippable, privacy-legible, accessible app: the user always knows what leaves their machine before it leaves, first-run explains the model, failures are actionable instead of raw strings, past analyses are browsable and deletable, the global hotkey is remappable from the UI, and the whole surface passes a VoiceOver/NVDA + contrast audit.
 
-**Architecture:** No new subsystems. Four seams get widened. (1) `AppError` gains a machine-readable `code` so the frontend can localize a remedy instead of printing a Rust string. (2) The already-written-but-never-read `analysis_history` table gets `list/get/delete/clear/prune` in `storage/history.rs`, Tauri commands in `commands/history.rs`, typed wrappers in `src/lib/api.ts`, and a `/history` route — closing the dead path where the backend writes rows nobody can see. (3) Two new boolean/optional settings (`confirm_before_send`, `high_contrast`, `history_retention_days`) flow through the existing `Settings` struct, its serde defaults, and the Settings page. (4) Presentational work — modal, onboarding, error surface, hotkey recorder — lands as Svelte 5 components backed by *pure, unit-tested modules* in `src/lib/` so the logic is testable without a DOM.
+**Architecture:** No new subsystems. Four seams get widened. (1) `AppError` gains a machine-readable `code` so the frontend can localize a remedy instead of printing a Rust string. (2) The already-written-but-never-read `analysis_history` table gets `list/get/delete/clear/prune` in `storage/history.rs`, Tauri commands in `commands/history.rs`, typed wrappers in `src/lib/api.ts`, and a `/history` route — closing the dead path where the backend writes rows nobody can see. (3) Two new boolean/optional settings (`confirm_before_send`, `high_contrast`, `history_retention_days`) flow through the existing `Settings` struct, its serde defaults, and the Settings page. (4) Presentational work — modal, onboarding, error surface, hotkey recorder — lands as Svelte 5 components backed by _pure, unit-tested modules_ in `src/lib/` so the logic is testable without a DOM.
 
 **Tech Stack:** Tauri 2.x, Rust (rusqlite, serde, thiserror, tauri-plugin-global-shortcut), Svelte 5 runes + TypeScript, Vitest + @testing-library/svelte, `cargo test`.
 
@@ -19,7 +19,7 @@
 - Locales: exactly `cs` and `en`. Czech is the primary audience; English text must read as native English, not a translation.
 - Accessibility target: **WCAG 2.1 AA** — body text contrast ≥ 4.5:1, large text (≥24px, or ≥18.66px bold) ≥ 3:1, every interactive element reachable and operable by keyboard, visible focus, no information conveyed by color alone.
 - Conventional Commits. One commit per task, at the end of the task.
-- Nothing in this plan performs code signing, notarization, or any release action. Task 9 produces *handover documentation only*.
+- Nothing in this plan performs code signing, notarization, or any release action. Task 9 produces _handover documentation only_.
 
 ---
 
@@ -27,48 +27,49 @@
 
 **Rust — new responsibilities**
 
-| File | Responsibility |
-| --- | --- |
-| `src-tauri/src/error.rs` (modify) | Adds `ErrorCode` enum, `AppError::Provider { code, detail }`, `AppError::code()`, and struct serialization `{code, message}`. |
-| `src-tauri/src/llm/cli.rs` (modify) | Maps spawn/timeout/exit/parse failures onto `ErrorCode::CliNotFound / CliTimeout / CliFailed / CliBadOutput`. |
-| `src-tauri/src/llm/anthropic.rs` (modify) | Maps transport + HTTP status onto `ErrorCode::Network / LlmAuth / LlmRateLimit / LlmHttp`. |
-| `src-tauri/src/search/brave.rs` (modify) | Maps transport + HTTP status onto `ErrorCode::Network / SearchAuth / SearchRateLimit / SearchHttp`. |
-| `src-tauri/src/storage/history.rs` (modify) | `HistoryEntry`, `list`, `get`, `delete`, `clear`, `prune` alongside the existing `insert`. |
-| `src-tauri/src/commands/history.rs` (replace) | Tauri commands `list_history`, `get_analysis`, `delete_analysis`, `clear_history`. |
-| `src-tauri/src/storage/settings_store.rs` (modify) | Three new fields: `confirm_before_send`, `high_contrast`, `history_retention_days` + validation + serde defaults. |
-| `src-tauri/src/hotkey.rs` (modify) | `normalize()` for accelerator validation, `reinstall()` for runtime re-registration. |
-| `src-tauri/src/commands/settings.rs` (modify) | Validates and re-registers the hotkey when it changes. |
-| `src-tauri/src/lib.rs` (modify) | Registers the four history commands; prunes history on startup. |
+| File                                               | Responsibility                                                                                                                |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `src-tauri/src/error.rs` (modify)                  | Adds `ErrorCode` enum, `AppError::Provider { code, detail }`, `AppError::code()`, and struct serialization `{code, message}`. |
+| `src-tauri/src/llm/cli.rs` (modify)                | Maps spawn/timeout/exit/parse failures onto `ErrorCode::CliNotFound / CliTimeout / CliFailed / CliBadOutput`.                 |
+| `src-tauri/src/llm/anthropic.rs` (modify)          | Maps transport + HTTP status onto `ErrorCode::Network / LlmAuth / LlmRateLimit / LlmHttp`.                                    |
+| `src-tauri/src/search/brave.rs` (modify)           | Maps transport + HTTP status onto `ErrorCode::Network / SearchAuth / SearchRateLimit / SearchHttp`.                           |
+| `src-tauri/src/storage/history.rs` (modify)        | `HistoryEntry`, `list`, `get`, `delete`, `clear`, `prune` alongside the existing `insert`.                                    |
+| `src-tauri/src/commands/history.rs` (replace)      | Tauri commands `list_history`, `get_analysis`, `delete_analysis`, `clear_history`.                                            |
+| `src-tauri/src/storage/settings_store.rs` (modify) | Three new fields: `confirm_before_send`, `high_contrast`, `history_retention_days` + validation + serde defaults.             |
+| `src-tauri/src/hotkey.rs` (modify)                 | `normalize()` for accelerator validation, `reinstall()` for runtime re-registration.                                          |
+| `src-tauri/src/commands/settings.rs` (modify)      | Validates and re-registers the hotkey when it changes.                                                                        |
+| `src-tauri/src/lib.rs` (modify)                    | Registers the four history commands; prunes history on startup.                                                               |
 
 **Frontend — new pure modules (logic, unit-tested without a DOM)**
 
-| File | Responsibility |
-| --- | --- |
-| `src/lib/errors.ts` | `AppErrorPayload`, `toAppError()`, `isSettingsError()`, `errorKey()`. |
-| `src/lib/sendSummary.ts` | `describeSend()` — what exactly leaves the machine for this analysis. |
-| `src/lib/onboarding.ts` | Step list + guard predicates for the first-run flow. |
-| `src/lib/hotkey.ts` | `acceleratorFromEvent()`, `formatAccelerator()`, `isModifierOnly()`. |
-| `src/lib/history.ts` | `formatHistoryDate()`, `historyPreview()`. |
-| `src/lib/contrast.ts` | `parseHex()`, `relativeLuminance()`, `contrastRatio()` — used by the contrast regression test. |
+| File                     | Responsibility                                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `src/lib/errors.ts`      | `AppErrorPayload`, `toAppError()`, `isSettingsError()`, `errorKey()`.                          |
+| `src/lib/sendSummary.ts` | `describeSend()` — what exactly leaves the machine for this analysis.                          |
+| `src/lib/onboarding.ts`  | Step list + guard predicates for the first-run flow.                                           |
+| `src/lib/hotkey.ts`      | `acceleratorFromEvent()`, `formatAccelerator()`, `isModifierOnly()`.                           |
+| `src/lib/history.ts`     | `formatHistoryDate()`, `historyPreview()`.                                                     |
+| `src/lib/contrast.ts`    | `parseHex()`, `relativeLuminance()`, `contrastRatio()` — used by the contrast regression test. |
 
 **Frontend — new components**
 
-| File | Responsibility |
-| --- | --- |
+| File                                     | Responsibility                                                                               |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `src/lib/components/ConfirmModal.svelte` | Generic accessible dialog: `role="dialog"`, `aria-modal`, focus trap, Escape, focus restore. |
-| `src/lib/components/SendConfirm.svelte` | Pre-send disclosure body rendered inside `ConfirmModal`. |
-| `src/lib/components/Onboarding.svelte` | Four-step first-run overlay. |
-| `src/lib/components/ErrorState.svelte` | Localized, actionable error surface (replaces `alert()` and the raw-string banner). |
-| `src/lib/components/HotkeyInput.svelte` | Key-capture recorder for the global hotkey. |
-| `src/routes/history/+page.svelte` | History list, search, open, delete, clear-all. |
+| `src/lib/components/SendConfirm.svelte`  | Pre-send disclosure body rendered inside `ConfirmModal`.                                     |
+| `src/lib/components/Onboarding.svelte`   | Four-step first-run overlay.                                                                 |
+| `src/lib/components/ErrorState.svelte`   | Localized, actionable error surface (replaces `alert()` and the raw-string banner).          |
+| `src/lib/components/HotkeyInput.svelte`  | Key-capture recorder for the global hotkey.                                                  |
+| `src/routes/history/+page.svelte`        | History list, search, open, delete, clear-all.                                               |
 
 ---
 
 ## Task 1: Structured error codes end-to-end
 
-Today every backend failure reaches the UI as a Rust `Display` string (`"cli 'claude' exit 1: …"`), the analysis page renders it verbatim behind `Chyba: {msg}`, and preflight failures use `alert()`. This task gives every error a stable code so the UI can say *what to do* in the user's language, and keeps the raw detail as collapsible diagnostics.
+Today every backend failure reaches the UI as a Rust `Display` string (`"cli 'claude' exit 1: …"`), the analysis page renders it verbatim behind `Chyba: {msg}`, and preflight failures use `alert()`. This task gives every error a stable code so the UI can say _what to do_ in the user's language, and keeps the raw detail as collapsible diagnostics.
 
 **Files:**
+
 - Modify: `src-tauri/src/error.rs`
 - Modify: `src-tauri/src/llm/cli.rs`
 - Modify: `src-tauri/src/llm/anthropic.rs`
@@ -81,6 +82,7 @@ Today every backend failure reaches the UI as a Rust `Display` string (`"cli 'cl
 - Modify: `src/lib/i18n/cs.json`, `src/lib/i18n/en.json`
 
 **Interfaces:**
+
 - Consumes: nothing from later tasks.
 - Produces:
   - Rust: `crate::error::ErrorCode` (serde `snake_case`), `AppError::provider(code, detail) -> AppError`, `AppError::code(&self) -> ErrorCode`. `AppError` now serializes as `{"code": "cli_not_found", "message": "…"}` instead of a bare string — **every** command's rejection value changes shape.
@@ -803,30 +805,30 @@ Also clear `error` in `reset()` (already done) and set `error = null` in the `an
 - Rewrite `handleAnalyze`:
 
 ```ts
-  async function handleAnalyze(input: AnalyzeInput) {
-    const message = preflightError();
-    if (message) {
-      preflight = { code: 'invalid', message };
-      return;
-    }
-
-    preflight = null;
-    questionText = input.question ?? '';
-    answerText = input.answer;
-    await analysisStore.run(input);
+async function handleAnalyze(input: AnalyzeInput) {
+  const message = preflightError();
+  if (message) {
+    preflight = { code: 'invalid', message };
+    return;
   }
+
+  preflight = null;
+  questionText = input.question ?? '';
+  answerText = input.answer;
+  await analysisStore.run(input);
+}
 ```
 
 - Render, directly under `<UpdateBanner />`:
 
 ```svelte
-  {#if preflight}
-    <ErrorState
-      error={preflight}
-      onSettings={() => goto(resolve('/settings'))}
-      onDismiss={() => (preflight = null)}
-    />
-  {/if}
+{#if preflight}
+  <ErrorState
+    error={preflight}
+    onSettings={() => goto(resolve('/settings'))}
+    onDismiss={() => (preflight = null)}
+  />
+{/if}
 ```
 
 - Replace the `{:else if analysisStore.status === 'error'}` branch with:
@@ -861,6 +863,7 @@ git commit -m "feat(errors): classify failures with stable codes and actionable 
 Before any text leaves the user's machine, show exactly what will be sent and where. Default ON; dismissible with "don't ask again", which flips a persisted setting.
 
 **Files:**
+
 - Modify: `src-tauri/src/storage/settings_store.rs`
 - Create: `src/lib/sendSummary.ts`
 - Create: `src/lib/sendSummary.test.ts`
@@ -872,6 +875,7 @@ Before any text leaves the user's machine, show exactly what will be sent and wh
 - Modify: `src/lib/i18n/cs.json`, `src/lib/i18n/en.json`
 
 **Interfaces:**
+
 - Consumes: `AppErrorPayload` / `ErrorState` from Task 1 (only for the settings page's save failure path — optional).
 - Produces:
   - Rust `Settings.confirm_before_send: bool` (serde default `true`).
@@ -1457,8 +1461,8 @@ And `src/lib/i18n/en.json`:
 - `src/lib/types.ts` — add to `interface Settings`:
 
 ```ts
-  /** Ask for explicit confirmation before any text leaves the machine. */
-  confirm_before_send: boolean;
+/** Ask for explicit confirmation before any text leaves the machine. */
+confirm_before_send: boolean;
 ```
 
 - `src/lib/api.ts` — add `confirm_before_send: true,` to `browserDefaultSettings()`.
@@ -1470,65 +1474,65 @@ And `src/lib/i18n/en.json`:
 Add imports for `ConfirmModal` and `SendConfirm`, then:
 
 ```ts
-  let pendingInput = $state<AnalyzeInput | null>(null);
-  let dontAskAgain = $state(false);
+let pendingInput = $state<AnalyzeInput | null>(null);
+let dontAskAgain = $state(false);
 
-  async function handleAnalyze(input: AnalyzeInput) {
-    const message = preflightError();
-    if (message) {
-      preflight = { code: 'invalid', message };
-      return;
-    }
-
-    preflight = null;
-    if (settings.current.confirm_before_send) {
-      pendingInput = input;
-      return;
-    }
-
-    await start(input);
+async function handleAnalyze(input: AnalyzeInput) {
+  const message = preflightError();
+  if (message) {
+    preflight = { code: 'invalid', message };
+    return;
   }
 
-  async function start(input: AnalyzeInput) {
-    questionText = input.question ?? '';
-    answerText = input.answer;
-    await analysisStore.run(input);
+  preflight = null;
+  if (settings.current.confirm_before_send) {
+    pendingInput = input;
+    return;
   }
 
-  async function confirmSend() {
-    const input = pendingInput;
-    pendingInput = null;
-    if (!input) return;
+  await start(input);
+}
 
-    if (dontAskAgain) {
-      await settings.save({ ...settings.current, confirm_before_send: false });
-      dontAskAgain = false;
-    }
+async function start(input: AnalyzeInput) {
+  questionText = input.question ?? '';
+  answerText = input.answer;
+  await analysisStore.run(input);
+}
 
-    await start(input);
+async function confirmSend() {
+  const input = pendingInput;
+  pendingInput = null;
+  if (!input) return;
+
+  if (dontAskAgain) {
+    await settings.save({ ...settings.current, confirm_before_send: false });
+    dontAskAgain = false;
   }
+
+  await start(input);
+}
 ```
 
 Render at the end of `<main>`:
 
 ```svelte
-  <ConfirmModal
-    open={pendingInput !== null}
-    title={t('send.title')}
-    confirmLabel={t('send.confirm')}
-    cancelLabel={t('send.cancel')}
-    onConfirm={confirmSend}
-    onCancel={() => {
-      pendingInput = null;
-      dontAskAgain = false;
-    }}
-  >
-    <SendConfirm
-      question={pendingInput?.question ?? ''}
-      answer={pendingInput?.answer ?? ''}
-      bind:dontAsk={dontAskAgain}
-    />
-  </ConfirmModal>
+<ConfirmModal
+  open={pendingInput !== null}
+  title={t('send.title')}
+  confirmLabel={t('send.confirm')}
+  cancelLabel={t('send.cancel')}
+  onConfirm={confirmSend}
+  onCancel={() => {
+    pendingInput = null;
+    dontAskAgain = false;
+  }}
+>
+  <SendConfirm
+    question={pendingInput?.question ?? ''}
+    answer={pendingInput?.answer ?? ''}
+    bind:dontAsk={dontAskAgain}
+  />
+</ConfirmModal>
 ```
 
 - [ ] **Step 17: Expose the toggle in Settings**
@@ -1536,14 +1540,14 @@ Render at the end of `<main>`:
 In `src/routes/settings/+page.svelte`, add a section above the updates section:
 
 ```svelte
-  <section class="settings-grid glass">
-    <h2>{t('settings.privacy_section')}</h2>
-    <label class="check">
-      <input type="checkbox" bind:checked={local.confirm_before_send} />
-      <span>{t('settings.confirm_before_send_label')}</span>
-    </label>
-    <small class="hint">{t('settings.confirm_before_send_hint')}</small>
-  </section>
+<section class="settings-grid glass">
+  <h2>{t('settings.privacy_section')}</h2>
+  <label class="check">
+    <input type="checkbox" bind:checked={local.confirm_before_send} />
+    <span>{t('settings.confirm_before_send_label')}</span>
+  </label>
+  <small class="hint">{t('settings.confirm_before_send_hint')}</small>
+</section>
 ```
 
 Add the keys to both bundles inside `settings`:
@@ -1579,6 +1583,7 @@ git commit -m "feat(privacy): pre-send confirmation modal with explicit destinat
 `Settings.onboarded` has existed since M0 and nothing ever reads it. This task makes it mean something: a four-step overlay that explains the tool, discloses the privacy model, gets a working provider configured, and shows the hotkey. It sets `onboarded: true` only when the user finishes or explicitly skips.
 
 **Files:**
+
 - Create: `src/lib/onboarding.ts`
 - Create: `src/lib/onboarding.test.ts`
 - Create: `src/lib/components/Onboarding.svelte`
@@ -1586,6 +1591,7 @@ git commit -m "feat(privacy): pre-send confirmation modal with explicit destinat
 - Modify: `src/lib/i18n/cs.json`, `src/lib/i18n/en.json`
 
 **Interfaces:**
+
 - Consumes: `settings` store, `CLI_PRESETS` / `presetCommand` from `$lib/cliPresets`, `setApiKey` from `$lib/api`.
 - Produces: `ONBOARDING_STEPS: readonly OnboardingStep[]` where `type OnboardingStep = 'welcome' | 'privacy' | 'provider' | 'ready'`; `nextStep(step)`, `prevStep(step)`, `canAdvance(step, draft, anthropicKeyEntered)`.
 
@@ -1766,7 +1772,12 @@ And `src/lib/i18n/en.json`:
 ```svelte
 <script lang="ts">
   import { setApiKey } from '$lib/api';
-  import { CLI_PRESETS, commandToCliPreset, presetCommand, type CliPresetId } from '$lib/cliPresets';
+  import {
+    CLI_PRESETS,
+    commandToCliPreset,
+    presetCommand,
+    type CliPresetId,
+  } from '$lib/cliPresets';
   import { toAppError, type AppErrorPayload } from '$lib/errors';
   import {
     canAdvance,
@@ -2111,12 +2122,14 @@ git commit -m "feat(onboarding): first-run flow with privacy disclosure and prov
 `analysis_history` rows have been written since M2 (`commands/analysis.rs` calls `storage::history::insert` twice per analysis), but `storage/history.rs` only has `insert`, `commands/history.rs` is a one-line comment, and `src/lib/api.ts` has no history functions at all. Nothing can read those rows. This task adds read/delete/prune to storage and exposes them as commands.
 
 **Files:**
+
 - Modify: `src-tauri/src/storage/history.rs`
 - Replace: `src-tauri/src/commands/history.rs`
 - Modify: `src-tauri/src/storage/settings_store.rs`
 - Modify: `src-tauri/src/lib.rs`
 
 **Interfaces:**
+
 - Consumes: `Db` (`storage::db`), `Analysis` (`models`), `AppError`/`ErrorCode` (Task 1).
 - Produces:
   - `storage::history::HistoryEntry { id: String, created_at: i64, preview: String, claim_count: usize }` (serde snake_case, matching `Analysis`).
@@ -2613,6 +2626,7 @@ git commit -m "feat(history): expose stored analyses via list/get/delete/clear c
 ## Task 5: History UI
 
 **Files:**
+
 - Modify: `src/lib/types.ts`, `src/lib/api.ts`, `src/lib/stores/settings.svelte.ts`, `src/lib/stores/analysis.svelte.ts`
 - Create: `src/lib/history.ts`, `src/lib/history.test.ts`
 - Create: `src/routes/history/+page.svelte`
@@ -2620,6 +2634,7 @@ git commit -m "feat(history): expose stored analyses via list/get/delete/clear c
 - Modify: `src/lib/i18n/cs.json`, `src/lib/i18n/en.json`
 
 **Interfaces:**
+
 - Consumes: Task 4's commands; `ConfirmModal` and `ErrorState` from Tasks 1–2.
 - Produces:
   - TS `interface HistoryEntry { id: string; created_at: number; preview: string; claim_count: number }`, `Settings.history_retention_days: number | null`, `HISTORY_RETENTION_OPTIONS`.
@@ -2700,8 +2715,8 @@ export interface HistoryEntry {
 add to `interface Settings`:
 
 ```ts
-  /** Days to keep local analysis history. `null` keeps it forever. */
-  history_retention_days: number | null;
+/** Days to keep local analysis history. `null` keeps it forever. */
+history_retention_days: number | null;
 ```
 
 and:
@@ -3089,25 +3104,27 @@ In `src/lib/stores/analysis.svelte.ts`, add to the exported object:
 In `src/routes/+page.svelte`'s `<nav>`, before the settings button:
 
 ```svelte
-      <button type="button" onclick={() => goto(resolve('/history'))}>
-        {t('common.history')}
-      </button>
+<button type="button" onclick={() => goto(resolve('/history'))}>
+  {t('common.history')}
+</button>
 ```
 
 In `src/routes/settings/+page.svelte`, inside the privacy section from Task 2:
 
 ```svelte
-    <label>
-      <span>{t('history.retention_label')}</span>
-      <select bind:value={local.history_retention_days}>
-        {#each HISTORY_RETENTION_OPTIONS as option (option ?? 'forever')}
-          <option value={option}>
-            {option === null ? t('history.retention_forever') : tf('history.retention_days', { days: option })}
-          </option>
-        {/each}
-      </select>
-    </label>
-    <small class="hint">{t('history.retention_hint')}</small>
+<label>
+  <span>{t('history.retention_label')}</span>
+  <select bind:value={local.history_retention_days}>
+    {#each HISTORY_RETENTION_OPTIONS as option (option ?? 'forever')}
+      <option value={option}>
+        {option === null
+          ? t('history.retention_forever')
+          : tf('history.retention_days', { days: option })}
+      </option>
+    {/each}
+  </select>
+</label>
+<small class="hint">{t('history.retention_hint')}</small>
 ```
 
 Import `HISTORY_RETENTION_OPTIONS` from `$lib/types` and `tf` from `$lib/stores/i18n.svelte`.
@@ -3131,6 +3148,7 @@ git commit -m "feat(history): browsable, searchable, deletable analysis history"
 Today the hotkey is a free-text field: the user can type anything, `set_settings` accepts it, and the change only takes effect after a restart (`hotkey::install` runs once in `setup`). This task makes it a key-capture control, validates the accelerator before persisting, and re-registers it live.
 
 **Files:**
+
 - Create: `src/lib/hotkey.ts`, `src/lib/hotkey.test.ts`
 - Create: `src/lib/components/HotkeyInput.svelte`
 - Modify: `src-tauri/src/hotkey.rs`
@@ -3139,6 +3157,7 @@ Today the hotkey is a free-text field: the user can type anything, `set_settings
 - Modify: `src/lib/i18n/cs.json`, `src/lib/i18n/en.json`
 
 **Interfaces:**
+
 - Produces:
   - Rust: `hotkey::normalize(accelerator: &str) -> AppResult<String>`, `hotkey::reinstall<R>(app: &AppHandle<R>, accelerator: &str) -> AppResult<()>`.
   - TS: `DEFAULT_HOTKEY`, `type PlatformKind = 'mac' | 'other'`, `platformKind()`, `acceleratorFromEvent(event: KeyboardEvent): string | null`, `formatAccelerator(accelerator: string, platform: PlatformKind): string`, `isModifierOnly(event: KeyboardEvent): boolean`.
@@ -3195,7 +3214,9 @@ describe('acceleratorFromEvent', () => {
   });
 
   it('rejects a modifier-only press', () => {
-    expect(acceleratorFromEvent(key({ code: 'ShiftLeft', key: 'Shift', shiftKey: true }))).toBeNull();
+    expect(
+      acceleratorFromEvent(key({ code: 'ShiftLeft', key: 'Shift', shiftKey: true })),
+    ).toBeNull();
   });
 
   it('rejects an unsupported key', () => {
@@ -3600,10 +3621,10 @@ Re-registering **before** persisting means a rejected accelerator (already taken
 In `src/routes/settings/+page.svelte`, replace the hotkey text input:
 
 ```svelte
-    <label>
-      <span>{t('settings.hotkey_label')}</span>
-      <HotkeyInput bind:value={local.hotkey} />
-    </label>
+<label>
+  <span>{t('settings.hotkey_label')}</span>
+  <HotkeyInput bind:value={local.hotkey} />
+</label>
 ```
 
 and import `HotkeyInput from '$lib/components/HotkeyInput.svelte'`.
@@ -3627,6 +3648,7 @@ git commit -m "feat(hotkey): key-capture remapping with live re-registration"
 Two problems. **Screen readers:** claim spans are `role="button"` on `<span>` with no accessible description of what the colour means, streaming verification results never announce, and there is no skip link. **Contrast:** the glass surfaces are translucent over a coloured mesh, and `--text-subtle` (`#8b8b94` on `#eef0f4`) sits at ~2.9:1 — well under AA. This task fixes both and adds a regression test so the tokens cannot silently drift back.
 
 **Files:**
+
 - Create: `src/lib/contrast.ts`, `src/lib/contrast.test.ts`
 - Modify: `src/lib/styles/tokens.css`, `src/app.css`
 - Modify: `src/lib/components/ClaimText.svelte`, `src/lib/components/ClaimText.test.ts`
@@ -3637,6 +3659,7 @@ Two problems. **Screen readers:** claim spans are `role="button"` on `<span>` wi
 - Modify: `src/lib/i18n/cs.json`, `src/lib/i18n/en.json`
 
 **Interfaces:**
+
 - Produces:
   - `src/lib/contrast.ts`: `parseHex(value: string): [number, number, number] | null`, `relativeLuminance(rgb): number`, `contrastRatio(a: string, b: string): number`.
   - `Settings.high_contrast: boolean` (Rust + TS, default `false`).
@@ -3751,9 +3774,7 @@ export function parseHex(value: string): Rgb | null {
 export function relativeLuminance(rgb: Rgb): number {
   const [r, g, b] = rgb.map((channel) => {
     const normalized = channel / 255;
-    return normalized <= 0.04045
-      ? normalized / 12.92
-      : ((normalized + 0.055) / 1.055) ** 2.4;
+    return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
   });
 
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -3776,17 +3797,17 @@ export function contrastRatio(a: string, b: string): number {
 In `src/lib/styles/tokens.css`, light `:root`:
 
 ```css
-  --text-muted: #4b4b55;
-  --text-subtle: #62626d;
-  --accent: #4338ca;
-  --accent-hover: #3730a3;
+--text-muted: #4b4b55;
+--text-subtle: #62626d;
+--accent: #4338ca;
+--accent-hover: #3730a3;
 ```
 
 dark `[data-theme='dark']`:
 
 ```css
-  --text-muted: #c3c6cf;
-  --text-subtle: #a2a6b0;
+--text-muted: #c3c6cf;
+--text-subtle: #a2a6b0;
 ```
 
 Re-run the test after each edit and adjust until every pair passes. Do not lower the threshold — darken the foreground.
@@ -3937,15 +3958,15 @@ Setting `data-contrast="normal"` explicitly is what lets the `:root:not([data-co
 In the privacy/appearance area of `src/routes/settings/+page.svelte`:
 
 ```svelte
-    <label class="check">
-      <input
-        type="checkbox"
-        bind:checked={local.high_contrast}
-        onchange={() => theme.setContrast(local.high_contrast)}
-      />
-      <span>{t('a11y.high_contrast_label')}</span>
-    </label>
-    <small class="hint">{t('a11y.high_contrast_hint')}</small>
+<label class="check">
+  <input
+    type="checkbox"
+    bind:checked={local.high_contrast}
+    onchange={() => theme.setContrast(local.high_contrast)}
+  />
+  <span>{t('a11y.high_contrast_label')}</span>
+</label>
+<small class="hint">{t('a11y.high_contrast_hint')}</small>
 ```
 
 Import `theme` from `$lib/stores/theme.svelte`.
@@ -4252,6 +4273,7 @@ and replace `ThemeToggle.svelte`'s local `.sr` class with `sr-only` (Svelte scop
 `src/routes/+layout.svelte` — add the skip link (shown in Task 3, Step 7) and `theme.init(settings.current.theme, settings.current.high_contrast)`.
 
 `src/routes/+page.svelte`:
+
 - `<main id="main" class="page">`
 - wrap the result block:
 
@@ -4290,12 +4312,14 @@ Expected: PASS, including all contrast pairs.
 - [ ] **Step 13: Manual screen-reader pass (record the result in the commit body)**
 
 macOS VoiceOver (`Cmd+F5`):
+
 1. `VO+U` → Landmarks: expect `main`, `complementary` (side panel), and the skip link as the first tab stop.
 2. Tab to a claim: expect "«claim text» (Verifiable fact, Verified), toggle button".
 3. Arrow between claims: expect each new selection announced.
 4. Run an analysis: expect the progress region to announce "Analyzing…" and then the verdict.
 
 Windows NVDA (`Insert+Space` for focus mode):
+
 1. `D` cycles landmarks — same three.
 2. `Tab` reaches every button, select, checkbox, and the modal traps focus.
 3. `Insert+F7` element list → Buttons: every claim appears with its kind.
@@ -4316,6 +4340,7 @@ git commit -m "feat(a11y): screen-reader semantics, AA contrast tokens, high-con
 The local-CLI LLM provider (`src-tauri/src/llm/cli.rs`, `src/lib/cliPresets.ts`, `ProviderKind::Cli`, the `*_cli_*.txt` prompts) was built after M2 and never entered the plan documents. It is now the **default** provider — `Settings::default()` returns `ProviderKind::Cli` — which contradicts the overview's cross-cutting decision table ("Anthropic Claude Haiku 4.5 only"). This task closes both gaps: the docs and the test coverage.
 
 **Files:**
+
 - Modify: `docs/superpowers/plans/2026-05-20-druhy-nazor-00-overview.md`
 - Modify: `src/lib/cliPresets.test.ts`
 - Create: `src/lib/i18n/parity.test.ts`
@@ -4327,10 +4352,10 @@ The local-CLI LLM provider (`src-tauri/src/llm/cli.rs`, `src/lib/cliPresets.ts`,
 In §4 of `docs/superpowers/plans/2026-05-20-druhy-nazor-00-overview.md`, replace the "LLM provider in MVP" row and add three rows:
 
 ```markdown
-| LLM provider (default)   | Local CLI runner via `ProviderKind::Cli` — the user's own `claude` / `codex` / `ollama` binary, prompt on stdin, JSON on stdout | Zero marginal cost, no BYO cloud key needed to start, and the text never leaves the machine by the app's own doing. Added after M2; supersedes "Anthropic only". |
-| LLM provider (cloud)     | Anthropic Claude Haiku 4.5 via `ProviderKind::Anthropic`, BYO key                                                             | Still supported and still the best CZ quality/latency when the user wants it.                                                                                   |
-| CLI output contract      | First balanced JSON object on stdout; markdown fences tolerated; unescaped quotes inside strings repaired once before failing  | Local runners wrap answers in prose and fences. Being strict here would make the default provider unusable.                                                      |
-| CLI prompt variants      | Separate `*_cli_cs.txt` / `*_cli_en.txt` prompts per stage                                                                    | CLI runners have no tool-use schema, so they need explicit "print only JSON" instructions the Anthropic prompts do not carry.                                    |
+| LLM provider (default) | Local CLI runner via `ProviderKind::Cli` — the user's own `claude` / `codex` / `ollama` binary, prompt on stdin, JSON on stdout | Zero marginal cost, no BYO cloud key needed to start, and the text never leaves the machine by the app's own doing. Added after M2; supersedes "Anthropic only". |
+| LLM provider (cloud) | Anthropic Claude Haiku 4.5 via `ProviderKind::Anthropic`, BYO key | Still supported and still the best CZ quality/latency when the user wants it. |
+| CLI output contract | First balanced JSON object on stdout; markdown fences tolerated; unescaped quotes inside strings repaired once before failing | Local runners wrap answers in prose and fences. Being strict here would make the default provider unusable. |
+| CLI prompt variants | Separate `*_cli_cs.txt` / `*_cli_en.txt` prompts per stage | CLI runners have no tool-use schema, so they need explicit "print only JSON" instructions the Anthropic prompts do not carry. |
 ```
 
 - [ ] **Step 2: Add the missing spec-coverage rows**
@@ -4338,17 +4363,17 @@ In §4 of `docs/superpowers/plans/2026-05-20-druhy-nazor-00-overview.md`, replac
 In §8 of the overview, append:
 
 ```markdown
-| Local CLI LLM provider (default)          | `04-privacy-polish.md` Task 8 (retrofit); implemented in `src-tauri/src/llm/cli.rs`, `CliProvider::{new,atomize,judge}`                                                    |
-| CLI provider presets in Settings          | `04-privacy-polish.md` Task 8 (retrofit); implemented in `src/lib/cliPresets.ts` + the provider section of `src/routes/settings/+page.svelte`                             |
-| CLI binary discovery outside the GUI PATH | `04-privacy-polish.md` Task 8 (retrofit); `build_cli_path` / `resolve_program` in `src-tauri/src/llm/cli.rs`                                                              |
-| Tolerant CLI JSON extraction and repair   | `04-privacy-polish.md` Task 8 (retrofit); `extract_json_object` / `repair_unescaped_string_quotes` in `src-tauri/src/llm/cli.rs`                                          |
-| Provider-aware prompt selection           | `04-privacy-polish.md` Task 8 (retrofit); `atomize_prompt(locale, provider)` / `judge_prompt(locale, provider)` in `src-tauri/src/llm/prompts/mod.rs`                     |
-| Pre-send disclosure of the destination    | `04-privacy-polish.md` Task 2 (`describeSend`, `SendConfirm.svelte`)                                                                                                      |
-| First-run onboarding                      | `04-privacy-polish.md` Task 3                                                                                                                                            |
-| Actionable error states                   | `04-privacy-polish.md` Task 1                                                                                                                                            |
-| History view                              | `04-privacy-polish.md` Tasks 4–5                                                                                                                                         |
-| Hotkey remapping in Settings              | `04-privacy-polish.md` Task 6                                                                                                                                            |
-| Accessibility + high contrast             | `04-privacy-polish.md` Task 7                                                                                                                                            |
+| Local CLI LLM provider (default) | `04-privacy-polish.md` Task 8 (retrofit); implemented in `src-tauri/src/llm/cli.rs`, `CliProvider::{new,atomize,judge}` |
+| CLI provider presets in Settings | `04-privacy-polish.md` Task 8 (retrofit); implemented in `src/lib/cliPresets.ts` + the provider section of `src/routes/settings/+page.svelte` |
+| CLI binary discovery outside the GUI PATH | `04-privacy-polish.md` Task 8 (retrofit); `build_cli_path` / `resolve_program` in `src-tauri/src/llm/cli.rs` |
+| Tolerant CLI JSON extraction and repair | `04-privacy-polish.md` Task 8 (retrofit); `extract_json_object` / `repair_unescaped_string_quotes` in `src-tauri/src/llm/cli.rs` |
+| Provider-aware prompt selection | `04-privacy-polish.md` Task 8 (retrofit); `atomize_prompt(locale, provider)` / `judge_prompt(locale, provider)` in `src-tauri/src/llm/prompts/mod.rs` |
+| Pre-send disclosure of the destination | `04-privacy-polish.md` Task 2 (`describeSend`, `SendConfirm.svelte`) |
+| First-run onboarding | `04-privacy-polish.md` Task 3 |
+| Actionable error states | `04-privacy-polish.md` Task 1 |
+| History view | `04-privacy-polish.md` Tasks 4–5 |
+| Hotkey remapping in Settings | `04-privacy-polish.md` Task 6 |
+| Accessibility + high contrast | `04-privacy-polish.md` Task 7 |
 ```
 
 Also update §7's phase map so the `04-privacy-polish.md` bullet points at the real filename (it is `04-privacy-polish.md`, not date-prefixed) and mark it as written.
@@ -4613,6 +4638,7 @@ git commit -m "test(cli): retrofit CLI provider into spec coverage and widen its
 **Explicitly out of execution scope.** Nothing here runs `codesign`, `notarytool`, or `signtool`, buys a certificate, or touches CI secrets. This task produces the document the owner needs to do it themselves.
 
 **Files:**
+
 - Create: `docs/distribution/CODE-SIGNING.md`
 - Modify: `README.md` (one link)
 
@@ -4668,6 +4694,7 @@ git commit -m "docs(distribution): signing and notarization handover checklist"
 ## Task 10: Privacy documentation and changelog
 
 **Files:**
+
 - Create: `docs/PRIVACY.md`
 - Modify: `README.md`, `CHANGELOG.md`
 - Modify: `src/routes/settings/+page.svelte` (link out)
@@ -4732,23 +4759,23 @@ git commit -m "docs(privacy): privacy policy, README section, and 0.5.0 changelo
 
 ## Spec Coverage Check
 
-| Overview §7 requirement for `04-privacy-polish.md` | Covered by |
-| --- | --- |
-| Pre-send confirmation modal | Task 2 |
-| Onboarding screens | Task 3 |
-| Privacy disclosures | Task 3 (privacy step), Task 10 (`docs/PRIVACY.md`) |
-| Error states | Task 1 |
-| History UI | Task 4 (backend), Task 5 (UI) |
-| Hotkey remapping | Task 6 |
-| Accessibility (VoiceOver/NVDA) | Task 7 (Steps 8–13) |
-| High-contrast mode | Task 7 (Steps 4–7) |
-| CLI provider retrofitted into spec coverage and tests | Task 8 |
-| macOS signing / notarization, Windows SmartScreen | Task 9 — **materials only, not executed** |
+| Overview §7 requirement for `04-privacy-polish.md`    | Covered by                                         |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| Pre-send confirmation modal                           | Task 2                                             |
+| Onboarding screens                                    | Task 3                                             |
+| Privacy disclosures                                   | Task 3 (privacy step), Task 10 (`docs/PRIVACY.md`) |
+| Error states                                          | Task 1                                             |
+| History UI                                            | Task 4 (backend), Task 5 (UI)                      |
+| Hotkey remapping                                      | Task 6                                             |
+| Accessibility (VoiceOver/NVDA)                        | Task 7 (Steps 8–13)                                |
+| High-contrast mode                                    | Task 7 (Steps 4–7)                                 |
+| CLI provider retrofitted into spec coverage and tests | Task 8                                             |
+| macOS signing / notarization, Windows SmartScreen     | Task 9 — **materials only, not executed**          |
 
 ## Out of Scope
 
 - Executing any signing, notarization, or certificate purchase (Task 9 is documentation).
-- Auto-updater install flow — the app still only *detects* newer releases and opens the download page.
+- Auto-updater install flow — the app still only _detects_ newer releases and opens the download page.
 - Full-text search over claim text (history search matches the analysed input only).
 - SQLCipher encryption at rest.
 - Any telemetry or crash reporting, opt-in or otherwise.

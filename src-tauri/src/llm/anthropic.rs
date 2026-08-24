@@ -1,4 +1,4 @@
-use crate::error::{AppError, AppResult};
+use crate::error::{http_error_code, AppError, AppResult, ErrorCode};
 use crate::llm::{AtomizationResult, JudgeVerdict, LlmProvider, RawClaim, RawClaimKind, Stance};
 use async_trait::async_trait;
 use reqwest::Client;
@@ -79,16 +79,25 @@ impl AnthropicProvider {
             .json(body)
             .send()
             .await
-            .map_err(|error| AppError::Other(format!("anthropic http: {error}")))?;
+            .map_err(|error| {
+                AppError::provider(ErrorCode::Network, format!("anthropic http: {error}"))
+            })?;
 
         let status = response.status();
-        let text = response
-            .text()
-            .await
-            .map_err(|error| AppError::Other(format!("anthropic body: {error}")))?;
+        let text = response.text().await.map_err(|error| {
+            AppError::provider(ErrorCode::Network, format!("anthropic body: {error}"))
+        })?;
 
         if !status.is_success() {
-            return Err(AppError::Other(format!("anthropic {status}: {text}")));
+            return Err(AppError::provider(
+                http_error_code(
+                    status.as_u16(),
+                    ErrorCode::LlmAuth,
+                    ErrorCode::LlmRateLimit,
+                    ErrorCode::LlmHttp,
+                ),
+                format!("anthropic {status}: {text}"),
+            ));
         }
 
         Ok(text)

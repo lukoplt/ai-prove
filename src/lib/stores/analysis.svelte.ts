@@ -1,4 +1,5 @@
 import { analyzeText, onAnalysisClaims, onAnalysisStarted, onClaimVerified } from '$lib/api';
+import { toAppError, type AppErrorPayload } from '$lib/errors';
 import type { Analysis, AnalyzeInput, Claim } from '$lib/types';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
@@ -7,7 +8,8 @@ type Status = 'idle' | 'running' | 'done' | 'error';
 let status = $state<Status>('idle');
 let current = $state<Analysis | null>(null);
 let selectedId = $state<string | null>(null);
-let error = $state<string | null>(null);
+let error = $state<AppErrorPayload | null>(null);
+let lastInput = $state<string | AnalyzeInput | null>(null);
 let started = false;
 const unlistens: UnlistenFn[] = [];
 
@@ -55,6 +57,9 @@ export const analysisStore = {
   get error() {
     return error;
   },
+  get lastInput() {
+    return lastInput;
+  },
   get selectedClaim(): Claim | null {
     if (!current || !selectedId) return null;
     return current.claims.find((claim) => claim.id === selectedId) ?? null;
@@ -67,12 +72,27 @@ export const analysisStore = {
   async run(input: string | AnalyzeInput): Promise<void> {
     await ensureSubscriptions();
     error = null;
+    lastInput = input;
     try {
       await analyzeText(input);
     } catch (caught) {
       status = 'error';
-      error = String(caught);
+      error = toAppError(caught);
     }
+  },
+
+  /** Re-runs the last requested analysis. No-op before the first run. */
+  async retry(): Promise<void> {
+    if (lastInput === null) return;
+    await this.run(lastInput);
+  },
+
+  /** Load an already-completed analysis (e.g. from history) into the view. */
+  show(analysis: Analysis): void {
+    current = analysis;
+    status = 'done';
+    selectedId = analysis.claims[0]?.id ?? null;
+    error = null;
   },
 
   select(id: string): void {

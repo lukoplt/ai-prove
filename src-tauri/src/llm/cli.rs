@@ -1,5 +1,5 @@
 use super::{AtomizationResult, JudgeVerdict, LlmProvider, RawClaim, RawClaimKind, Stance};
-use crate::error::{AppError, AppResult};
+use crate::error::{AppError, AppResult, ErrorCode};
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
@@ -66,35 +66,44 @@ impl CliProvider {
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped());
 
-            let mut child = cmd
-                .spawn()
-                .map_err(|e| AppError::Other(format!("cli spawn '{}': {e}", self.command[0])))?;
+            let mut child = cmd.spawn().map_err(|e| {
+                let code = if e.kind() == std::io::ErrorKind::NotFound {
+                    ErrorCode::CliNotFound
+                } else {
+                    ErrorCode::CliFailed
+                };
+                AppError::provider(code, format!("cli spawn '{}': {e}", self.command[0]))
+            })?;
 
             if let Some(mut stdin) = child.stdin.take() {
-                stdin
-                    .write_all(prompt.as_bytes())
-                    .await
-                    .map_err(|e| AppError::Other(format!("cli stdin write: {e}")))?;
-                stdin
-                    .shutdown()
-                    .await
-                    .map_err(|e| AppError::Other(format!("cli stdin close: {e}")))?;
+                stdin.write_all(prompt.as_bytes()).await.map_err(|e| {
+                    AppError::provider(ErrorCode::CliFailed, format!("cli stdin write: {e}"))
+                })?;
+                stdin.shutdown().await.map_err(|e| {
+                    AppError::provider(ErrorCode::CliFailed, format!("cli stdin close: {e}"))
+                })?;
             }
 
             let output = timeout(CLI_TIMEOUT, child.wait_with_output())
                 .await
                 .map_err(|_| {
-                    AppError::Other(format!("cli timeout after {}s", CLI_TIMEOUT.as_secs()))
+                    AppError::provider(
+                        ErrorCode::CliTimeout,
+                        format!("cli timeout after {}s", CLI_TIMEOUT.as_secs()),
+                    )
                 })?
-                .map_err(|e| AppError::Other(format!("cli wait: {e}")))?;
+                .map_err(|e| AppError::provider(ErrorCode::CliFailed, format!("cli wait: {e}")))?;
 
             if !output.status.success() {
-                return Err(AppError::Other(format!(
-                    "cli '{}' exit {}: {}",
-                    self.command[0],
-                    output.status,
-                    String::from_utf8_lossy(&output.stderr).trim()
-                )));
+                return Err(AppError::provider(
+                    ErrorCode::CliFailed,
+                    format!(
+                        "cli '{}' exit {}: {}",
+                        self.command[0],
+                        output.status,
+                        String::from_utf8_lossy(&output.stderr).trim()
+                    ),
+                ));
             }
 
             Ok(String::from_utf8_lossy(&output.stdout).into_owned())
@@ -249,9 +258,10 @@ impl RawJudge {
             "contradicts" => Stance::Contradicts,
             "mentions" => Stance::Mentions,
             other => {
-                return Err(AppError::Other(format!(
-                    "cli judge: unknown stance {other}"
-                )))
+                return Err(AppError::provider(
+                    ErrorCode::CliBadOutput,
+                    format!("cli judge: unknown stance {other}"),
+                ))
             }
         };
         Ok(JudgeVerdict {
@@ -267,7 +277,10 @@ fn parse_kind(kind: &str) -> AppResult<RawClaimKind> {
         "inference" => Ok(RawClaimKind::Inference),
         "opinion" => Ok(RawClaimKind::Opinion),
         "contradiction" => Ok(RawClaimKind::Contradiction),
-        other => Err(AppError::Other(format!("unknown claim kind: {other}"))),
+        other => Err(AppError::provider(
+            ErrorCode::CliBadOutput,
+            format!("unknown claim kind: {other}"),
+        )),
     }
 }
 
@@ -338,20 +351,29 @@ fn extract_jsonish_object(text: &str) -> Option<String> {
 fn parse_cli_json_object<T: DeserializeOwned>(raw: &str, stage: &str) -> AppResult<T> {
     let json = extract_json_object(raw)
         .or_else(|| extract_jsonish_object(raw))
-        .ok_or_else(|| AppError::Other(format!("cli {stage}: no JSON in output: {raw}")))?;
+        .ok_or_else(|| {
+            AppError::provider(
+                ErrorCode::CliBadOutput,
+                format!("cli {stage}: no JSON in output: {raw}"),
+            )
+        })?;
 
     serde_json::from_str(&json).or_else(|original_error| {
         let repaired = repair_unescaped_string_quotes(&json);
         if repaired == json {
-            return Err(AppError::Other(format!(
-                "cli {stage} JSON parse: {original_error}; raw={raw}"
-            )));
+            return Err(AppError::provider(
+                ErrorCode::CliBadOutput,
+                format!("cli {stage} JSON parse: {original_error}; raw={raw}"),
+            ));
         }
 
         serde_json::from_str(&repaired).map_err(|repair_error| {
-            AppError::Other(format!(
-                "cli {stage} JSON parse: {original_error}; repair failed: {repair_error}; raw={raw}"
-            ))
+            AppError::provider(
+                ErrorCode::CliBadOutput,
+                format!(
+                    "cli {stage} JSON parse: {original_error}; repair failed: {repair_error}; raw={raw}"
+                ),
+            )
         })
     })
 }
@@ -564,6 +586,28 @@ mod tests {
         let provider = CliProvider::new(cmd, "en".into()).unwrap();
         let result = provider.atomize("ignored").await.unwrap();
         assert!(result.claims.is_empty());
+    }
+
+    #[tokio::test]
+    async fn missing_program_reports_cli_not_found() {
+        let provider = CliProvider::new("prove-definitely-not-a-real-binary", "en".into()).unwrap();
+        let error = provider.atomize("x").await.unwrap_err();
+        assert_eq!(error.code(), ErrorCode::CliNotFound);
+    }
+
+    #[tokio::test]
+    async fn nonzero_exit_reports_cli_failed() {
+        let provider = CliProvider::new("sh -c 'exit 7'", "en".into()).unwrap();
+        let error = provider.atomize("x").await.unwrap_err();
+        assert_eq!(error.code(), ErrorCode::CliFailed);
+    }
+
+    #[tokio::test]
+    async fn unparseable_output_reports_cli_bad_output() {
+        let cmd = "sh -c 'cat >/dev/null; printf %s \"no json here\"'";
+        let provider = CliProvider::new(cmd, "en".into()).unwrap();
+        let error = provider.atomize("x").await.unwrap_err();
+        assert_eq!(error.code(), ErrorCode::CliBadOutput);
     }
 
     #[tokio::test]

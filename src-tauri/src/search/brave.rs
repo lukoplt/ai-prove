@@ -1,5 +1,5 @@
 use super::{SearchProvider, SearchResult};
-use crate::error::{AppError, AppResult};
+use crate::error::{http_error_code, AppError, AppResult, ErrorCode};
 use async_trait::async_trait;
 use reqwest::Client;
 use serde::Deserialize;
@@ -60,16 +60,25 @@ impl SearchProvider for BraveClient {
             .header("Accept", "application/json")
             .send()
             .await
-            .map_err(|error| AppError::Other(format!("brave http: {error}")))?;
+            .map_err(|error| {
+                AppError::provider(ErrorCode::Network, format!("brave http: {error}"))
+            })?;
 
         let status = response.status();
-        let body = response
-            .text()
-            .await
-            .map_err(|error| AppError::Other(format!("brave body: {error}")))?;
+        let body = response.text().await.map_err(|error| {
+            AppError::provider(ErrorCode::Network, format!("brave body: {error}"))
+        })?;
 
         if !status.is_success() {
-            return Err(AppError::Other(format!("brave {status}: {body}")));
+            return Err(AppError::provider(
+                http_error_code(
+                    status.as_u16(),
+                    ErrorCode::SearchAuth,
+                    ErrorCode::SearchRateLimit,
+                    ErrorCode::SearchHttp,
+                ),
+                format!("brave {status}: {body}"),
+            ));
         }
 
         parse_brave_response(&body)

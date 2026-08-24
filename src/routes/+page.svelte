@@ -4,11 +4,13 @@
   import { onMount } from 'svelte';
   import { isTauriRuntime, readClipboardText } from '$lib/api';
   import ClaimText from '$lib/components/ClaimText.svelte';
+  import ErrorState from '$lib/components/ErrorState.svelte';
   import PasteInput from '$lib/components/PasteInput.svelte';
   import SidePanel from '$lib/components/SidePanel.svelte';
   import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   import UpdateBanner from '$lib/components/UpdateBanner.svelte';
   import VerdictBanner from '$lib/components/VerdictBanner.svelte';
+  import type { AppErrorPayload } from '$lib/errors';
   import { analysisPreflightError } from '$lib/preflight';
   import { analysisStore } from '$lib/stores/analysis.svelte';
   import { t, tf } from '$lib/stores/i18n.svelte';
@@ -17,6 +19,7 @@
 
   let questionText = $state('');
   let answerText = $state('');
+  let preflight = $state<AppErrorPayload | null>(null);
 
   function preflightError(): string | null {
     return analysisPreflightError({
@@ -32,13 +35,17 @@
   }
 
   async function handleAnalyze(input: AnalyzeInput) {
-    const error = preflightError();
-    if (error) {
-      alert(error);
-      await goto(resolve('/settings'));
+    const message = preflightError();
+    if (message) {
+      preflight = { code: 'invalid', message };
       return;
     }
 
+    preflight = null;
+    await start(input);
+  }
+
+  async function start(input: AnalyzeInput) {
     questionText = input.question ?? '';
     answerText = input.answer;
     await analysisStore.run(input);
@@ -77,6 +84,14 @@
 
   <UpdateBanner />
 
+  {#if preflight}
+    <ErrorState
+      error={preflight}
+      onSettings={() => goto(resolve('/settings'))}
+      onDismiss={() => (preflight = null)}
+    />
+  {/if}
+
   <PasteInput bind:question={questionText} bind:answer={answerText} onAnalyze={handleAnalyze} />
 
   <section class="result">
@@ -88,10 +103,12 @@
           <p class="hint">{t('summary.loading_hint')}</p>
         </div>
       </div>
-    {:else if analysisStore.status === 'error'}
-      <p class="status error glass">
-        {tf('summary.error_prefix', { msg: analysisStore.error ?? '?' })}
-      </p>
+    {:else if analysisStore.status === 'error' && analysisStore.error}
+      <ErrorState
+        error={analysisStore.error}
+        onRetry={() => analysisStore.retry()}
+        onSettings={() => goto(resolve('/settings'))}
+      />
     {:else if analysisStore.status === 'done' && analysisStore.current}
       <div class="grid">
         <div class="left glass">
@@ -201,13 +218,6 @@
     color: var(--text-subtle);
     font-size: 13px;
   }
-  .status.error {
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-    border-color: var(--bad);
-    color: var(--bad);
-  }
-
   .grid {
     flex: 1 1 auto;
     display: grid;
