@@ -24,11 +24,26 @@ pub async fn get_settings<R: Runtime>(app: AppHandle<R>) -> AppResult<Settings> 
 
 #[tauri::command]
 pub async fn set_settings<R: Runtime>(app: AppHandle<R>, settings: Settings) -> AppResult<()> {
+    let mut settings = settings;
     settings.validate()?;
+    settings.hotkey = crate::hotkey::normalize(&settings.hotkey)?;
 
     let store = app
         .store(SETTINGS_FILE)
         .map_err(|error| AppError::Store(error.to_string()))?;
+
+    let previous_hotkey = store
+        .get(SETTINGS_KEY)
+        .and_then(|value| serde_json::from_value::<Settings>(value).ok())
+        .map(|previous| previous.hotkey);
+
+    // Re-register before persisting: if the accelerator is already owned by
+    // another app the failure surfaces here and the stored settings keep the
+    // shortcut that still works.
+    if previous_hotkey.as_deref() != Some(settings.hotkey.as_str()) {
+        crate::hotkey::reinstall(&app, &settings.hotkey)?;
+    }
+
     store.set(SETTINGS_KEY, json!(settings));
     store
         .save()

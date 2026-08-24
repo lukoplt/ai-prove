@@ -137,6 +137,12 @@
     "open_download": "Open download page",
     "later": "Later"
   },
+  "hotkey": {
+    "recording": "Press a combination…",
+    "reset": "Default",
+    "hint": "Click, then press a combination. Escape cancels. It needs at least one modifier (or be a function key).",
+    "rejected": "That combination cannot be used. Try another."
+  },
   "tray": {
     "show": "Open PROVE",
     "quit": "Quit"

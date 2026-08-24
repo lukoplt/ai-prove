@@ -8,6 +8,7 @@
     presetCommand,
     type CliPresetId,
   } from '$lib/cliPresets';
+  import HotkeyInput from '$lib/components/HotkeyInput.svelte';
   import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   import { setLocale } from '$lib/stores/i18n.svelte';
   import { settings } from '$lib/stores/settings.svelte';
@@ -207,7 +208,7 @@
     </label>
     <label>
       <span>{t('settings.hotkey_label')}</span>
-      <input type="text" bind:value={local.hotkey} />
+      <HotkeyInput bind:value={local.hotkey} />
     </label>
     <label>
       <span>{t('settings.cache_ttl_label')}</span>

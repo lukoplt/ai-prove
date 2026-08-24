@@ -137,6 +137,12 @@
     "open_download": "Otevřít stránku ke stažení",
     "later": "Později"
   },
+  "hotkey": {
+    "recording": "Stiskni kombinaci…",
+    "reset": "Výchozí",
+    "hint": "Klikni a stiskni kombinaci. Escape zruší. Musí obsahovat alespoň jeden modifikátor (nebo být funkční klávesa).",
+    "rejected": "Tuhle kombinaci použít nejde. Zkus jinou."
+  },
   "tray": {
     "show": "Otevřít PROVE",
     "quit": "Ukončit"
